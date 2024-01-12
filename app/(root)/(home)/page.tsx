@@ -5,50 +5,12 @@ import NoResult from "@/components/shared/NoResult";
 import LoacalSearch from "@/components/shared/search/LoacalSearch";
 import { Button } from "@/components/ui/button";
 import { HomePageFilters } from "@/constants/filters";
+import { getQuestions } from "@/lib/actions/question.action";
 import Link from "next/link";
 
-const questions = [
-  {
-    _id: 1,
-    title: "How to use React?",
-    tags: [
-      { _id: 1, name: "React" },
-      { _id: 2, name: "Web Dev" },
-    ],
-    author: {
-      _id: 101, // Assuming an _id for the author
-      name: "John Doe",
-      picture: "url_to_john_doe_picture", // Placeholder URL
-    },
-    createdAt: new Date("2021-09-01T12:00:00.000Z"),
-    answers: [
-      /* array of answer objects */
-    ],
-    views: 125365,
-    upvotes: 5635,
-  },
-  {
-    _id: 2,
-    title: "How to center Div?",
-    tags: [
-      { _id: 1, name: "HTML" },
-      { _id: 2, name: "CSS" },
-    ],
-    author: {
-      _id: 102, // Assuming an _id for the author
-      name: "John Mark",
-      picture: "url_to_john_mark_picture", // Placeholder URL
-    },
-    createdAt: new Date("2024-01-10T12:00:00.000Z"),
-    answers: [
-      /* array of answer objects */
-    ],
-    views: 160,
-    upvotes: 50,
-  },
-];
-
-export default function Home() {
+export default async function Home() {
+  const result = await getQuestions({});
+  console.log(result.questions);
   return (
     <>
       <div className="flex w-full flex-col-reverse justify-between gap-4 sm:flex-row sm:items-center">
@@ -77,8 +39,8 @@ export default function Home() {
       <HomeFilters />
 
       <div className="mt-10 flex w-full flex-col gap-6">
-        {questions.length > 0 ? (
-          questions.map((question) => (
+        {result.questions.length > 0 ? (
+          result.questions.map((question) => (
             <QuestionCard
               key={question._id}
               _id={question._id}
