@@ -13,11 +13,11 @@ const RightSideBar = () => {
   ];
 
   const popularTags = [
-    { _id: 1, name: "React", count: 15 },
-    { _id: 2, name: "NextJS", count: 10 },
-    { _id: 3, name: "Angular", count: 5 },
-    { _id: 4, name: "PHP", count: 3 },
-    { _id: 5, name: "JavaScript", count: 1 },
+    { _id: "1", name: "React", count: 15 },
+    { _id: "2", name: "NextJS", count: 10 },
+    { _id: "3", name: "Angular", count: 5 },
+    { _id: "4", name: "PHP", count: 3 },
+    { _id: "5", name: "JavaScript", count: 1 },
   ];
   return (
     <section className="background-light900_dark200 light-border custom-scrollbar sticky right-0 top-0 flex h-screen w-[350px] flex-col overflow-y-auto border-l p-6 pt-36 shadow-light-300 dark:shadow-none max-xl:hidden">
