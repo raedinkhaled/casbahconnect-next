@@ -1,4 +1,10 @@
 {
+  "workbench.colorCustomizations": {
+    "[Material Theme Darker]": {
+      "statusBar.debuggingBackground": "#076137"
+    }
+  },
+  "material-icon-theme.activeIconPack": "react",
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {
