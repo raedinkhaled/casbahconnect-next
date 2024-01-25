@@ -12,15 +12,21 @@ import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 
-const Page = async ({ params, searchParams }) => {
-  const result = await getQuestionById({ questionId: params.id });
+const Page = async ({ params, searchParams }: any) => {
   const { userId: clerkId } = auth();
   let mongoUser;
 
   if (clerkId) {
     mongoUser = await getUserById({ userId: clerkId });
   }
+  const result = await getQuestionById({ questionId: params.id });
 
+  let questionContent = "";
+
+  if (result) {
+    questionContent = result.content;
+    console.log({ questionContent });
+  }
   return (
     <>
       <div className="flex-start w-full flex-col">
@@ -102,7 +108,7 @@ const Page = async ({ params, searchParams }) => {
       />
 
       <AnswerForm
-        question={result.conent}
+        question={questionContent}
         questionId={JSON.stringify(result._id)}
         authorId={JSON.stringify(mongoUser._id)}
       />

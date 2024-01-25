@@ -15,7 +15,7 @@ const AnswersTab = async ({ searchParams, userId, clerkId }: Props) => {
   });
   return (
     <>
-      {result.answers.map((answer) => (
+      {result.answers.map((answer: any) => (
         <AnswerCard
           key={answer._id}
           _id={answer._id}
