@@ -74,7 +74,7 @@ const MobileNav = () => {
             alt="CasbahConnect"
           />
           <p className="h2-bold text-dark100_light900 font-spaceGrotesk">
-            Dev <span className="text-primary-500">Oveflow</span>
+            Casbah <span className="text-primary-500">Connect</span>
           </p>
         </Link>
         <div>
