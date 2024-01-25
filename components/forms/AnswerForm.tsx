@@ -34,6 +34,8 @@ const AnswerForm = ({ question, questionId, authorId }: Props) => {
       answer: "",
     },
   });
+  console.log({ question });
+  const [isSumbittingAI, setisSumbittingAI] = useState(false);
 
   const handleCreateAnswer = async (values: z.infer<typeof AnswerSchema>) => {
     setIsSubmitting(true);
@@ -56,22 +58,62 @@ const AnswerForm = ({ question, questionId, authorId }: Props) => {
     }
   };
   const editorRef = useRef(null);
+
+  const generateAIAnswer = async () => {
+    if (!authorId) return;
+
+    setisSumbittingAI(true);
+
+    try {
+      // API CALL
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/api/chatgpt`,
+        {
+          method: "POST",
+          body: JSON.stringify({ question }),
+        }
+      );
+
+      const aiAnswer = await response.json();
+
+      const formattedAnswer = aiAnswer.reply.replace(/\n/g, "<br />");
+
+      if (editorRef.current) {
+        const editor = editorRef.current as any;
+        editor.setContent(formattedAnswer);
+      }
+      // Toast Notification
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setisSumbittingAI(false);
+    }
+  };
   return (
     <div>
       <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-center sm:gap-2">
         <h4 className="paragraph-semibold text-dark400_light800">
           Write your answer here
         </h4>
-        <Button className="btn light-border-2 gap-1.5 rounded-md px-4 py-2.5 text-primary-500 shadow-none dark:text-primary-500">
-          <Image
-            src="/assets/icons/stars.svg"
-            alt="star"
-            width={12}
-            height={12}
-            className="object-contain"
-            onClick={() => {}}
-          />
-          Genearte AI Answer
+        <Button
+          onClick={generateAIAnswer}
+          className="btn light-border-2 gap-1.5 rounded-md px-4 py-2.5 text-primary-500 shadow-none dark:text-primary-500"
+        >
+          {isSumbittingAI ? (
+            <>Generating...</>
+          ) : (
+            <>
+              <Image
+                src="/assets/icons/stars.svg"
+                alt="star"
+                width={12}
+                height={12}
+                className="object-contain"
+              />
+              Generate AI Answer
+            </>
+          )}
         </Button>
       </div>
       <Form {...form}>

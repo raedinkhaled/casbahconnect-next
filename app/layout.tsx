@@ -20,7 +20,7 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "DevFlow",
+  title: "Casbah Connect",
   description: "Built BY RAEDIN KHALED",
   icons: {
     icon: "/assets/images/site-logo.svg",
