@@ -10,18 +10,18 @@ const GlobalSearch = () => {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const searchContainerRef = useRef(null);
+  const searchContainerRef = useRef<HTMLDivElement>(null);
 
-  const query = searchParams.get("q");
+  const query = searchParams.get("global");
 
   const [search, setSearch] = useState(query || "");
   const [isOpen, setisOpen] = useState(false);
 
   useEffect(() => {
-    const handleOutsideClick = (event: any) => {
+    const handleOutsideClick = (event: MouseEvent) => {
       if (
         searchContainerRef.current &&
-        // @ts-ignore
+        event.target instanceof Node &&
         !searchContainerRef.current.contains(event.target)
       ) {
         setisOpen(false);
@@ -29,14 +29,12 @@ const GlobalSearch = () => {
       }
     };
 
-    setisOpen(false);
-
     document.addEventListener("click", handleOutsideClick);
 
     return () => {
       document.removeEventListener("click", handleOutsideClick);
     };
-  }, [pathname]);
+  }, []);
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {

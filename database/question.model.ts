@@ -1,14 +1,14 @@
-import { Schema, models, model, Document } from "mongoose";
+import { Schema, models, model, Document, Types } from "mongoose";
 
-export interface IQuestion extends Document {
+export interface IQuestion extends Document<Types.ObjectId> {
   title: string;
   content: string;
-  tags: Schema.Types.ObjectId[];
+  tags: Types.ObjectId[];
   views: number;
-  upvotes: Schema.Types.ObjectId[];
-  downvotes: Schema.Types.ObjectId[];
-  author: Schema.Types.ObjectId;
-  answers: Schema.Types.ObjectId[];
+  upvotes: Types.Array<Types.ObjectId>;
+  downvotes: Types.Array<Types.ObjectId>;
+  author: Types.ObjectId;
+  answers: Types.ObjectId[];
   createdAt: Date;
 }
 

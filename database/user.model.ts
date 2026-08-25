@@ -1,6 +1,6 @@
-import { Schema, model, models, Document } from "mongoose";
+import { Schema, model, models, Document, Types } from "mongoose";
 
-export interface IUser extends Document {
+export interface IUser extends Document<Types.ObjectId> {
   name?: string | null;
   username?: string;
   email: string;
@@ -11,7 +11,7 @@ export interface IUser extends Document {
   location?: string;
   portfolioWebsite?: string;
   reputation?: number;
-  saved: Schema.Types.ObjectId[];
+  saved: Types.ObjectId[];
   joinedAt: Date;
 }
 

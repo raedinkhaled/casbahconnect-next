@@ -1,23 +1,37 @@
-import mongoose from "mongoose";
+import mongoose, { type Mongoose } from "mongoose";
 
-let isConnected: boolean = false;
+const MONGODB_DATABASE = "devflow";
 
-export const connectToDatabase = async () => {
-  mongoose.set("strictQuery", true);
+declare global {
+  var _mongooseConnection:
+    | { connection: Mongoose | null; promise: Promise<Mongoose> | null }
+    | undefined;
+}
 
-  if (!process.env.MONGODB_URL)
-    return console.log("MONGODB_URL is not defined");
+const cache = global._mongooseConnection ?? {
+  connection: null,
+  promise: null,
+};
 
-  if (isConnected) return console.log("=> using existing database connection");
+global._mongooseConnection = cache;
+
+export async function connectToDatabase() {
+  if (cache.connection) return cache.connection;
+
+  const uri = process.env.MONGODB_URL;
+  if (!uri) throw new Error("MONGODB_URL is not configured");
+
+  if (!cache.promise) {
+    mongoose.set("strictQuery", true);
+    cache.promise = mongoose.connect(uri, { dbName: MONGODB_DATABASE });
+  }
 
   try {
-    await mongoose.connect(process.env.MONGODB_URL, {
-      dbName: "devflow",
-    });
-    isConnected = true;
-
-    console.log("=> using new database connection");
+    cache.connection = await cache.promise;
   } catch (error) {
-    console.log("=> error while connecting with database:", error);
+    cache.promise = null;
+    throw error;
   }
-};
+
+  return cache.connection;
+}

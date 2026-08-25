@@ -1,11 +1,11 @@
-import { Schema, model, models, Document } from "mongoose";
+import { Schema, model, models, Document, Types } from "mongoose";
 
-export interface IInteraction extends Document {
-  user: Schema.Types.ObjectId;
-  action: "string";
-  question: Schema.Types.ObjectId;
-  answer: Schema.Types.ObjectId;
-  tags: Schema.Types.ObjectId[];
+export interface IInteraction extends Document<Types.ObjectId> {
+  user: Types.ObjectId;
+  action: string;
+  question: Types.ObjectId;
+  answer: Types.ObjectId;
+  tags: Types.ObjectId[];
   createdAt: Date;
 }
 

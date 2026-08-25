@@ -1,12 +1,12 @@
-import { Schema, model, models, Document } from "mongoose";
+import { Schema, model, models, Document, Types } from "mongoose";
 
-export interface IAnswer extends Document {
+export interface IAnswer extends Document<Types.ObjectId> {
   content: string;
-  question: Schema.Types.ObjectId;
-  author: Schema.Types.ObjectId;
-  upvotes: Schema.Types.ObjectId[];
-  downvotes: Schema.Types.ObjectId[];
-  crreatedAt: Date;
+  question: Types.ObjectId;
+  author: Types.ObjectId;
+  upvotes: Types.Array<Types.ObjectId>;
+  downvotes: Types.Array<Types.ObjectId>;
+  createdAt: Date;
 }
 
 const AnswerSchema = new Schema({

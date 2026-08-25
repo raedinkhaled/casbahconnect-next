@@ -7,11 +7,17 @@ import Image from "next/image";
 import GlobalFilters from "./GlobalFilters";
 import { globalSearch } from "@/lib/actions/general.action";
 
+interface SearchResultItem {
+  id: string;
+  title: string;
+  type: string;
+}
+
 const GlobalResult = () => {
   const searchParams = useSearchParams();
   const [isLoading, setisLoading] = useState(false);
 
-  const [result, setresult] = useState([]);
+  const [result, setresult] = useState<SearchResultItem[]>([]);
 
   const global = searchParams.get("global");
   const type = searchParams.get("type");
@@ -24,7 +30,8 @@ const GlobalResult = () => {
       try {
         const res = await globalSearch({ query: global, type });
 
-        setresult(JSON.parse(res));
+        const parsed: unknown = JSON.parse(res);
+        setresult(Array.isArray(parsed) ? (parsed as SearchResultItem[]) : []);
       } catch (error) {
         console.log(error);
         throw error;
@@ -72,7 +79,7 @@ const GlobalResult = () => {
         ) : (
           <div className="flex flex-col gap-2">
             {result.length > 0 ? (
-              result.map((item: any, index: number) => (
+              result.map((item, index) => (
                 <Link
                   href={renderLink(item.type, item.id)}
                   key={item.type + item.id + index}
