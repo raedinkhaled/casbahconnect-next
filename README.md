@@ -6,7 +6,7 @@ A Stack Overflow–style Q&A platform for developers: ask questions, post answer
 
 ![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js) ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black) ![TypeScript](https://img.shields.io/badge/TypeScript-6-3178C6?logo=typescript&logoColor=white) ![MongoDB](https://img.shields.io/badge/MongoDB-6-47A248?logo=mongodb&logoColor=white) ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss&logoColor=white)
 
-![Home feed, light theme](docs/screenshots/home-light.jpg)
+![Home feed, light theme](.github/screenshots/home-light.jpg)
 
 ## What it does
 
@@ -21,8 +21,8 @@ A Stack Overflow–style Q&A platform for developers: ask questions, post answer
 
 |                                    |                                          |
 | ---------------------------------- | ---------------------------------------- |
-| ![Question detail](docs/screenshots/question-detail.jpg) | ![Ask a question](docs/screenshots/ask-question.jpg) |
-| ![Home feed, dark theme](docs/screenshots/home-dark.jpg) | |
+| ![Question detail](.github/screenshots/question-detail.jpg) | ![Ask a question](.github/screenshots/ask-question.jpg) |
+| ![Home feed, dark theme](.github/screenshots/home-dark.jpg) | |
 
 ## Stack
 
