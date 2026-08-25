@@ -6,6 +6,8 @@ import { getQuestionsByTagId } from "@/lib/actions/tag.actions";
 import { URLProps } from "@/types";
 import React from "react";
 
+type TagQuestion = Awaited<ReturnType<typeof getQuestionsByTagId>>["questions"][number];
+
 const Page = async ({ params, searchParams }: URLProps) => {
   const [{ id }, query] = await Promise.all([params, searchParams]);
   const result = await getQuestionsByTagId({
@@ -30,7 +32,7 @@ const Page = async ({ params, searchParams }: URLProps) => {
 
       <div className="mt-10 flex w-full flex-col gap-6">
         {result.questions.length > 0 ? (
-          result.questions.map((question: any) => (
+          result.questions.map((question: TagQuestion) => (
             <QuestionCard
               key={question._id}
               _id={question._id}

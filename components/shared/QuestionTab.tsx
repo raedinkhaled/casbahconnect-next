@@ -9,6 +9,8 @@ interface Props {
   userId: string;
   viewerId?: string | null;
 }
+type UserQuestion = Awaited<ReturnType<typeof getUserQuestions>>["questions"][number];
+
 const QuestionTab = async ({ searchParams, userId, viewerId }: Props) => {
   const result = await getUserQuestions({
     userId,
@@ -16,7 +18,7 @@ const QuestionTab = async ({ searchParams, userId, viewerId }: Props) => {
   });
   return (
     <>
-      {result.questions.map((question: any) => (
+      {result.questions.map((question: UserQuestion) => (
         <QuestionCard
           key={question._id}
           _id={question._id}

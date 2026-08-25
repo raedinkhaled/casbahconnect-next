@@ -13,6 +13,10 @@ import { getCurrentUser } from "@/lib/auth-user";
 import { formatNumber, getTimeStamp } from "@/lib/utils";
 import type { URLProps } from "@/types";
 
+type QuestionTag = NonNullable<
+  Awaited<ReturnType<typeof getQuestionById>>
+>["tags"][number];
+
 export default async function QuestionPage({ params, searchParams }: URLProps) {
   const [{ id }, query, currentUser] = await Promise.all([
     params,
@@ -102,7 +106,7 @@ export default async function QuestionPage({ params, searchParams }: URLProps) {
 
       <ParseHTML data={question.content} />
       <div className="mt-8 flex flex-wrap gap-2">
-        {question.tags.map((tag: any) => (
+        {question.tags.map((tag: QuestionTag) => (
           <RenderTag
             _id={String(tag._id)}
             key={String(tag._id)}

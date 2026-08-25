@@ -1,5 +1,5 @@
 "use client";
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 import {
   Form,
   FormControl,
@@ -46,17 +46,12 @@ const AnswerForm = ({ question, questionId, isAuthenticated }: Props) => {
         path: pathname,
       });
       form.reset();
-      if (editorRef.current) {
-        const editor = editorRef.current as any;
-        editor.setContent("");
-      }
     } catch (error) {
       console.log(error);
     } finally {
       setIsSubmitting(false);
     }
   };
-  const editorRef = useRef(null);
 
   const generateAIAnswer = async () => {
     if (!isAuthenticated) return;
@@ -78,10 +73,10 @@ const AnswerForm = ({ question, questionId, isAuthenticated }: Props) => {
 
       const formattedAnswer = aiAnswer.reply.replace(/\n/g, "<br />");
 
-      if (editorRef.current) {
-        const editor = editorRef.current as any;
-        editor.setContent(formattedAnswer);
-      }
+      form.setValue("answer", formattedAnswer, {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
       // Toast Notification
     } catch (error) {
       console.log(error);
@@ -128,10 +123,7 @@ const AnswerForm = ({ question, questionId, isAuthenticated }: Props) => {
                 <FormControl className="mt-3.5">
                   <Editor
                     apiKey={process.env.NEXT_PUBLIC_TINY_EDITOR_API_KEY}
-                    onInit={(evt, editor) => {
-                      // @ts-ignore
-                      editorRef.current = editor;
-                    }}
+                    value={field.value}
                     onBlur={field.onBlur}
                     onEditorChange={(content) => field.onChange(content)}
                     init={{

@@ -12,6 +12,8 @@ import { SearchParamsProps } from "@/types";
 import { getCurrentUser } from "@/lib/auth-user";
 import { redirect } from "next/navigation";
 
+type SavedQuestion = Awaited<ReturnType<typeof getSavedQuestions>>["questions"][number];
+
 export default async function Collection({ searchParams }: SearchParamsProps) {
   const query = await searchParams;
   const currentUser = await getCurrentUser();
@@ -43,7 +45,7 @@ export default async function Collection({ searchParams }: SearchParamsProps) {
 
       <div className="mt-10 flex w-full flex-col gap-6">
         {result.questions.length > 0 ? (
-          result.questions.map((question: any) => (
+          result.questions.map((question: SavedQuestion) => (
             <QuestionCard
               key={question._id}
               _id={question._id}

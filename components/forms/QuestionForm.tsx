@@ -15,29 +15,42 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { QuestionsSchema } from "@/lib/validations";
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 import { Editor } from "@tinymce/tinymce-react";
 import { Badge } from "../ui/badge";
 import Image from "next/image";
 import { createQuestion, editQuestion } from "@/lib/actions/question.action";
 import { useRouter, usePathname } from "next/navigation";
 import { useTheme } from "@/context/ThemeProvider";
+import type { ControllerRenderProps } from "react-hook-form";
 
 interface Props {
   type?: string;
   questionDetails?: string;
 }
+
+type ParsedQuestionDetails = {
+  _id: string;
+  title: string;
+  content: string;
+  tags: { name: string }[];
+};
+
+type TagsField = ControllerRenderProps<
+  z.infer<typeof QuestionsSchema>,
+  "tags"
+>;
+
 const QuestionForm = ({ type, questionDetails }: Props) => {
   const { mode } = useTheme();
-  const editorRef = useRef(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
 
-  const parsedQuestionDetails =
-    questionDetails && JSON.parse(questionDetails || "");
+  const parsedQuestionDetails: ParsedQuestionDetails | undefined =
+    questionDetails ? JSON.parse(questionDetails) : undefined;
 
-  const groupedTags = parsedQuestionDetails?.tags.map((tag: any) => tag.name);
+  const groupedTags = parsedQuestionDetails?.tags.map((tag) => tag.name);
   // 1. Define your form.
   const form = useForm<z.infer<typeof QuestionsSchema>>({
     resolver: zodResolver(QuestionsSchema),
@@ -54,12 +67,12 @@ const QuestionForm = ({ type, questionDetails }: Props) => {
     try {
       if (type === "edit") {
         await editQuestion({
-          questionId: parsedQuestionDetails._id,
+          questionId: parsedQuestionDetails!._id,
           title: values.title,
           content: values.explanation,
           path: pathname,
         });
-        router.push(`/question/${parsedQuestionDetails._id}`);
+        router.push(`/question/${parsedQuestionDetails!._id}`);
       } else {
         await createQuestion({
           title: values.title,
@@ -69,7 +82,7 @@ const QuestionForm = ({ type, questionDetails }: Props) => {
         });
         router.push("/");
       }
-    } catch (error) {
+    } catch {
     } finally {
       setIsSubmitting(false);
     }
@@ -77,7 +90,7 @@ const QuestionForm = ({ type, questionDetails }: Props) => {
 
   const handleKeyDown = (
     e: React.KeyboardEvent<HTMLInputElement>,
-    field: any
+    field: TagsField
   ) => {
     if (e.key === "Enter" && field.name === "tags") {
       e.preventDefault();
@@ -102,7 +115,7 @@ const QuestionForm = ({ type, questionDetails }: Props) => {
     }
   };
 
-  const handleTagRemove = (tag: string, field: any) => {
+  const handleTagRemove = (tag: string, field: TagsField) => {
     const newTags = field.value.filter((t: string) => t !== tag);
     form.setValue("tags", newTags);
   };
@@ -147,13 +160,9 @@ const QuestionForm = ({ type, questionDetails }: Props) => {
               <FormControl className="mt-3.5">
                 <Editor
                   apiKey={process.env.NEXT_PUBLIC_TINY_EDITOR_API_KEY}
-                  onInit={(evt, editor) => {
-                    // @ts-ignore
-                    editorRef.current = editor;
-                  }}
+                  value={field.value}
                   onBlur={field.onBlur}
                   onEditorChange={(content) => field.onChange(content)}
-                  initialValue={parsedQuestionDetails?.content || ""}
                   init={{
                     height: 350,
                     menubar: false,
@@ -214,7 +223,7 @@ const QuestionForm = ({ type, questionDetails }: Props) => {
 
                   {field.value.length > 0 && (
                     <div className="flex-start mt-2.5 gap-2.5">
-                      {field.value.map((tag: any) => (
+                      {field.value.map((tag) => (
                         <Badge
                           key={tag}
                           className="subtle-medium background-light800_dark300 text-light400_light500 items-center justify-center gap-2 rounded-md border-none px-4 py-2 capitalize"
