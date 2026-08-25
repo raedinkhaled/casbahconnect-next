@@ -1,5 +1,3 @@
-/* eslint-disable camelcase */
-import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
 import "../styles/prism.css";
 import React from "react";
@@ -35,16 +33,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.variable} ${spaceGrotesk.variable}`}>
-        <ClerkProvider
-          appearance={{
-            elements: {
-              formButtonPrimary: "primary-gradient",
-              footerActionLink: "primary-text-gradient hover:text-primary-500",
-            },
-          }}
-        >
-          <ThemeProvider>{children}</ThemeProvider>
-        </ClerkProvider>
+        <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
   );

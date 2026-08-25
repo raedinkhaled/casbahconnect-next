@@ -14,7 +14,7 @@ import { SearchParamsProps } from "@/types";
 import Link from "next/link";
 
 import type { Metadata } from "next";
-import { auth } from "@clerk/nextjs";
+import { getCurrentUser } from "@/lib/auth-user";
 
 export const metadata: Metadata = {
   title: "Home | Casbah Connect",
@@ -22,7 +22,8 @@ export const metadata: Metadata = {
 };
 
 export default async function Home({ searchParams }: SearchParamsProps) {
-  const { userId } = auth();
+  const currentUser = await getCurrentUser();
+  const userId = currentUser ? String(currentUser._id) : undefined;
   let result;
   if (searchParams?.filter === "recommended") {
     if (userId) {
@@ -85,6 +86,7 @@ export default async function Home({ searchParams }: SearchParamsProps) {
               answers={question.answers}
               views={question.views}
               createdAt={question.createdAt}
+              viewerId={userId}
             />
           ))
         ) : (

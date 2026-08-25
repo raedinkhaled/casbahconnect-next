@@ -22,11 +22,10 @@ import { usePathname, useRouter } from "next/navigation";
 import { updateUser } from "@/lib/actions/user.action";
 
 interface Props {
-  clerkId: string;
   user: string;
 }
 
-const ProfileForm = ({ clerkId, user }: Props) => {
+const ProfileForm = ({ user }: Props) => {
   const parsedUser = JSON.parse(user);
 
   const [isSubmitting, setisSubmitting] = useState(false);
@@ -49,7 +48,6 @@ const ProfileForm = ({ clerkId, user }: Props) => {
     setisSubmitting(true);
     try {
       await updateUser({
-        clerkId,
         updateData: {
           name: values.name,
           username: values.username,

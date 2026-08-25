@@ -59,12 +59,7 @@ export async function globalSearch(params: SearchParams) {
                 ? `Answers containing ${query}`
                 : item[searchField],
             type,
-            id:
-              type === "user"
-                ? item.clerkId
-                : type === "answer"
-                ? item.question
-                : item._id,
+            id: type === "answer" ? item.question : item._id,
           }))
         );
       }
@@ -86,12 +81,7 @@ export async function globalSearch(params: SearchParams) {
             ? `Answers containing ${query}`
             : item[modelInfo.searchField],
         type,
-        id:
-          type === "user"
-            ? item.clerkId
-            : type === "answer"
-            ? item.question
-            : item._id,
+        id: type === "answer" ? item.question : item._id,
       }));
     }
 

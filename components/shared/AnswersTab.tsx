@@ -6,9 +6,9 @@ import Pagination from "./Pagination";
 
 interface Props extends SearchParamsProps {
   userId: string;
-  clerkId?: string | null;
+  viewerId?: string | null;
 }
-const AnswersTab = async ({ searchParams, userId, clerkId }: Props) => {
+const AnswersTab = async ({ searchParams, userId, viewerId }: Props) => {
   const result = await getUserAnswers({
     userId,
     page: searchParams.page ? +searchParams.page : 1,
@@ -19,7 +19,7 @@ const AnswersTab = async ({ searchParams, userId, clerkId }: Props) => {
         <AnswerCard
           key={answer._id}
           _id={answer._id}
-          clerkId={clerkId}
+          viewerId={viewerId}
           question={answer.question}
           author={answer.author}
           upvotes={answer.upvotes.length}

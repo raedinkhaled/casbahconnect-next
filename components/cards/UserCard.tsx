@@ -8,10 +8,11 @@ import RenderTag from "../shared/RenderTag";
 interface Props {
   user: {
     _id: string;
-    clerkId: string;
-    picture: string;
-    name: string;
-    username: string;
+    picture?: string;
+    image?: string | null;
+    name?: string | null;
+    username?: string;
+    email: string;
   };
 }
 
@@ -19,23 +20,23 @@ const UserCard = async ({ user }: Props) => {
   const interactedTags = await getTopInteractedTags({ userId: user._id });
   return (
     <Link
-      href={`/profile/${user.clerkId}`}
+      href={`/profile/${user._id}`}
       className="shadow-light100_darknone w-full max-xs:min-w-full xs:w-[260px]"
     >
       <article className="background-light900_dark200 light-border flex w-full flex-col items-center justify-center rounded-2xl border  p-8">
         <Image
           alt="User Profile Image"
-          src={user.picture}
+          src={user.picture || user.image || "/assets/images/default-logo.svg"}
           width={100}
           height={100}
           className="rounded-full"
         />
         <div className="mt-4 text-center">
           <h3 className="h3-bold text-dark200_light900 line-clamp-1">
-            {user.name}
+            {user.name || user.email.split("@")[0]}
           </h3>
           <p className="body-regular text-dark500_light500 mt-2">
-            @{user.username}
+            @{user.username || user.email.split("@")[0]}
           </p>
         </div>
         <div className="mt-5">

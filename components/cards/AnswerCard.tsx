@@ -2,11 +2,10 @@ import Link from "next/link";
 
 import Metric from "../shared/Metric";
 import { formatNumber, getTimeStamp } from "@/lib/utils";
-import { SignedIn } from "@clerk/nextjs";
 import EditDeleteAction from "../shared/EditDeleteAction";
 
 interface Props {
-  clerkId?: string | null;
+  viewerId?: string | null;
   _id: string;
   question: {
     _id: string;
@@ -14,23 +13,24 @@ interface Props {
   };
   author: {
     _id: string;
-    clerkId: string;
-    name: string;
-    picture: string;
+    name?: string | null;
+    email: string;
+    picture?: string;
+    image?: string | null;
   };
   upvotes: number;
   createdAt: Date;
 }
 
 const AnswerCard = ({
-  clerkId,
+  viewerId,
   _id,
   question,
   author,
   upvotes,
   createdAt,
 }: Props) => {
-  const showActionButtons = clerkId && clerkId === author.clerkId;
+  const showActionButtons = viewerId && viewerId === String(author._id);
   return (
     <Link
       href={`/question/${question._id}/#${_id}`}
@@ -46,20 +46,16 @@ const AnswerCard = ({
           </h3>
         </div>
 
-        <SignedIn>
-          {showActionButtons && (
-            <EditDeleteAction type="Answer" itemId={JSON.stringify(_id)} />
-          )}
-        </SignedIn>
+        {showActionButtons && <EditDeleteAction type="Answer" itemId={JSON.stringify(_id)} />}
       </div>
 
       <div className="flex-between mt-6 w-full flex-wrap gap-3">
         <Metric
-          imgUrl={author.picture}
+          imgUrl={author.picture || author.image || "/assets/images/default-logo.svg"}
           alt="user avatar"
-          value={author.name}
+          value={author.name || author.email.split("@")[0]}
           title={` • asked ${getTimeStamp(createdAt)}`}
-          href={`/profile/${author.clerkId}`}
+          href={`/profile/${author._id}`}
           textStyles="body-medium text-dark400_light700"
           isAuthor
         />

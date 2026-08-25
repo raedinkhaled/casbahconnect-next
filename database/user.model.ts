@@ -1,13 +1,13 @@
 import { Schema, model, models, Document } from "mongoose";
 
 export interface IUser extends Document {
-  clerkId: string;
-  name: string;
-  username: string;
+  name?: string | null;
+  username?: string;
   email: string;
-  password?: string;
+  emailVerified?: Date | null;
+  image?: string | null;
   bio?: string;
-  picture: string;
+  picture?: string;
   location?: string;
   portfolioWebsite?: string;
   reputation?: number;
@@ -16,17 +16,17 @@ export interface IUser extends Document {
 }
 
 const UserSchema = new Schema({
-  clerkId: { type: String, required: true },
-  name: { type: String, required: true },
-  username: { type: String, required: true, unique: true },
+  name: { type: String },
+  username: { type: String, unique: true, sparse: true },
   email: {
     type: String,
     required: true,
     unique: true,
   },
-  password: { type: String },
+  emailVerified: { type: Date, default: null },
+  image: { type: String, default: null },
   bio: { type: String },
-  picture: { type: String },
+  picture: { type: String, default: "/assets/images/default-logo.svg" },
   location: { type: String },
   portfolioWebsite: { type: String },
   reputation: { type: Number, default: 0 },

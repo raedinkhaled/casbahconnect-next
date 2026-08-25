@@ -5,20 +5,14 @@ import ParseHTML from "@/components/shared/ParseHTML";
 import RenderTag from "@/components/shared/RenderTag";
 import Votes from "@/components/shared/Votes";
 import { getQuestionById } from "@/lib/actions/question.action";
-import { getUserById } from "@/lib/actions/user.action";
+import { getCurrentUser } from "@/lib/auth-user";
 import { formatNumber, getTimeStamp } from "@/lib/utils";
-import { auth } from "@clerk/nextjs";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 
 const Page = async ({ params, searchParams }: any) => {
-  const { userId: clerkId } = auth();
-  let mongoUser;
-
-  if (clerkId) {
-    mongoUser = await getUserById({ userId: clerkId });
-  }
+  const currentUser = await getCurrentUser();
   const result = await getQuestionById({ questionId: params.id });
 
   let questionContent = "";
@@ -32,30 +26,34 @@ const Page = async ({ params, searchParams }: any) => {
       <div className="flex-start w-full flex-col">
         <div className="flex w-full flex-col-reverse justify-between gap-5 sm:flex-row sm:items-center sm:gap-2">
           <Link
-            href={`/profile/${result.author.clerkId}`}
+            href={`/profile/${result.author._id}`}
             className="flex items-center justify-start gap-1"
           >
             <Image
-              src={result.author.picture}
+              src={
+                result.author.picture ||
+                result.author.image ||
+                "/assets/images/default-logo.svg"
+              }
               alt="Author Picture"
               className="rounded-full"
               width={22}
               height={22}
             />
             <p className="paragraph-semibold text-dark300_light700">
-              {result.author.name}
+              {result.author.name || result.author.email.split("@")[0]}
             </p>
           </Link>
           <div className="flex justify-end">
             <Votes
               type="Question"
               itemId={JSON.stringify(result._id)}
-              userId={JSON.stringify(mongoUser._id)}
+              userId={JSON.stringify(currentUser?._id)}
               upvotes={result.upvotes.length}
-              hasUpvoted={result.upvotes.includes(mongoUser._id)}
+              hasUpvoted={result.upvotes.includes(currentUser?._id)}
               downvotes={result.downvotes.length}
-              hasDownvoted={result.downvotes.includes(mongoUser._id)}
-              hasSaved={mongoUser?.saved.includes(result._id)}
+              hasDownvoted={result.downvotes.includes(currentUser?._id)}
+              hasSaved={currentUser?.saved.includes(result._id)}
             />
           </div>
         </div>
@@ -101,7 +99,7 @@ const Page = async ({ params, searchParams }: any) => {
 
       <AllAnswers
         questionId={result._id}
-        userId={mongoUser._id}
+        userId={currentUser?._id}
         totalAnswers={result.answers.length}
         page={searchParams?.page}
         filter={searchParams?.filter}
@@ -110,7 +108,7 @@ const Page = async ({ params, searchParams }: any) => {
       <AnswerForm
         question={questionContent}
         questionId={JSON.stringify(result._id)}
-        authorId={JSON.stringify(mongoUser._id)}
+        authorId={JSON.stringify(currentUser?._id)}
       />
     </>
   );

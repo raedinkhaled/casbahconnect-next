@@ -9,23 +9,25 @@ import {
 } from "@/components/ui/sheet";
 import Image from "next/image";
 import Link from "next/link";
-import { SignedOut } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { sidebarLinks } from "@/constants";
 import { usePathname } from "next/navigation";
 
-const NavContent = () => {
+const NavContent = ({ userId }: { userId?: string }) => {
   const pathname = usePathname();
   return (
     <section className="flex h-full flex-col gap-6 pt-16">
       {sidebarLinks.map((item) => {
+        const route =
+          item.route === "/profile" && userId
+            ? `/profile/${userId}`
+            : item.route;
         const isActive =
-          (pathname.includes(item.route) && item.route.length > 1) ||
-          pathname === item.route;
+          (pathname.includes(route) && route.length > 1) || pathname === route;
         return (
           <SheetClose asChild key={item.route}>
             <Link
-              href={item.route}
+              href={route}
               className={`${
                 isActive
                   ? "primary-gradient rounded-lg text-light-900"
@@ -50,7 +52,7 @@ const NavContent = () => {
   );
 };
 
-const MobileNav = () => {
+const MobileNav = ({ userId }: { userId?: string }) => {
   return (
     <Sheet>
       <SheetTrigger asChild>
@@ -79,9 +81,9 @@ const MobileNav = () => {
         </Link>
         <div>
           <SheetClose asChild>
-            <NavContent />
+            <NavContent userId={userId} />
           </SheetClose>
-          <SignedOut>
+          {!userId && (
             <div className="flex flex-col gap-3">
               <SheetClose asChild>
                 <Link href="/sign-in">
@@ -99,7 +101,7 @@ const MobileNav = () => {
                 </Link>
               </SheetClose>
             </div>
-          </SignedOut>
+          )}
         </div>
       </SheetContent>
     </Sheet>

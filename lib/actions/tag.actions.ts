@@ -113,7 +113,7 @@ export async function getQuestionsByTagId(params: GetQuestionsByTagIdParams) {
         {
           path: "author",
           model: User,
-          select: "_id clerkId name picture",
+          select: "_id name username email image picture",
         },
       ],
     });

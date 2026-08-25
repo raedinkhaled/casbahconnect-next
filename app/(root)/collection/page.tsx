@@ -9,13 +9,14 @@ import { QuestionFilters } from "@/constants/filters";
 
 import { getSavedQuestions } from "@/lib/actions/user.action";
 import { SearchParamsProps } from "@/types";
-import { auth } from "@clerk/nextjs";
+import { getCurrentUser } from "@/lib/auth-user";
+import { redirect } from "next/navigation";
 
 export default async function Collection({ searchParams }: SearchParamsProps) {
-  const { userId } = auth();
-  if (!userId) return null;
+  const currentUser = await getCurrentUser();
+  if (!currentUser) redirect("/sign-in?callbackUrl=/collection");
+
   const result = await getSavedQuestions({
-    clerkId: userId,
     searchQuery: searchParams.q,
     filter: searchParams.filter,
     page: searchParams.page ? +searchParams.page : 1,
@@ -52,6 +53,7 @@ export default async function Collection({ searchParams }: SearchParamsProps) {
               answers={question.answers}
               views={question.views}
               createdAt={question.createdAt}
+              viewerId={String(currentUser._id)}
             />
           ))
         ) : (
