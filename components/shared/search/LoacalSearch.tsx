@@ -2,7 +2,7 @@
 import { Input } from "@/components/ui/input";
 import { formUrlQuery, removeKeysFromQuery } from "@/lib/utils";
 import Image from "next/image";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 interface CustomInputProps {
   route: string;
@@ -12,14 +12,12 @@ interface CustomInputProps {
   otherClasses?: string;
 }
 const LoacalSearch = ({
-  route,
   iconPosition,
   imgSrc,
   placeholder,
   otherClasses,
 }: CustomInputProps) => {
   const router = useRouter();
-  const pathname = usePathname();
   const searchParams = useSearchParams();
 
   const query = searchParams.get("q");
@@ -29,14 +27,16 @@ const LoacalSearch = ({
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       if (search) {
-        const newUrl = formUrlQuery({
-          params: searchParams.toString(),
-          key: "q",
-          value: search,
-        });
-        router.push(newUrl, { scroll: false });
+        if (search !== query) {
+          const newUrl = formUrlQuery({
+            params: searchParams.toString(),
+            key: "q",
+            value: search,
+          });
+          router.push(newUrl, { scroll: false });
+        }
       } else {
-        if (pathname === route) {
+        if (query) {
           const newUrl = removeKeysFromQuery({
             params: searchParams.toString(),
             keysToRemove: ["q"],
@@ -47,7 +47,7 @@ const LoacalSearch = ({
     }, 350);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [search, route, pathname, router, searchParams, query]);
+  }, [search, router, searchParams, query]);
 
   return (
     <div

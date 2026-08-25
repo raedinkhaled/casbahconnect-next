@@ -39,12 +39,14 @@ const GlobalSearch = () => {
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       if (search) {
-        const newUrl = formUrlQuery({
-          params: searchParams.toString(),
-          key: "global",
-          value: search,
-        });
-        router.push(newUrl, { scroll: false });
+        if (search !== query) {
+          const newUrl = formUrlQuery({
+            params: searchParams.toString(),
+            key: "global",
+            value: search,
+          });
+          router.push(newUrl, { scroll: false });
+        }
       } else {
         if (query) {
           const newUrl = removeKeysFromQuery({
