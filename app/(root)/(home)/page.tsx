@@ -29,7 +29,6 @@ export default async function Home({ searchParams }: SearchParamsProps) {
   if (query.filter === "recommended") {
     if (userId) {
       result = await getRecommendedQuestions({
-        userId,
         searchQuery: query.q,
         page: query.page ? +query.page : 1,
       });
