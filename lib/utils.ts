@@ -9,6 +9,26 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+// Server actions throw plain Errors (e.g. "Forbidden", "Question not found").
+// This maps the ones users can actually hit to friendlier copy and falls back
+// to a generic message for anything unexpected, instead of surfacing nothing
+// (or a raw stack trace) to the user.
+const KNOWN_ERROR_MESSAGES: Record<string, string> = {
+  Unauthorized: "Please sign in and try again.",
+  Forbidden: "You don't have permission to do that.",
+  "Question not found": "This question no longer exists.",
+};
+
+export const getErrorMessage = (
+  error: unknown,
+  fallback = "Something went wrong. Please try again."
+): string => {
+  if (error instanceof Error && error.message) {
+    return KNOWN_ERROR_MESSAGES[error.message] ?? fallback;
+  }
+  return fallback;
+};
+
 export const getTimeStamp = (createdAt: Date): string => {
   const now = new Date();
   const seconds = Math.floor((now.getTime() - createdAt.getTime()) / 1000);

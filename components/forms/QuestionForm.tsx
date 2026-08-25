@@ -23,6 +23,9 @@ import { createQuestion, editQuestion } from "@/lib/actions/question.action";
 import { useRouter, usePathname } from "next/navigation";
 import { useTheme } from "@/context/ThemeProvider";
 import type { ControllerRenderProps } from "react-hook-form";
+import { toast } from "../ui/use-toast";
+import { getErrorMessage } from "@/lib/utils";
+import { RICH_TEXT_MIN_LENGTH } from "@/lib/validations";
 
 interface Props {
   type?: string;
@@ -82,7 +85,12 @@ const QuestionForm = ({ type, questionDetails }: Props) => {
         });
         router.push("/");
       }
-    } catch {
+    } catch (error) {
+      toast({
+        title: type === "edit" ? "Couldn't edit question" : "Couldn't post question",
+        description: getErrorMessage(error),
+        variant: "destructive",
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -196,8 +204,9 @@ const QuestionForm = ({ type, questionDetails }: Props) => {
                 />
               </FormControl>
               <FormDescription className="body-regular mt-2.5 text-light-500">
-                Introduce the problem and expand on what you put in the title.
-                Minimum 20 characters.
+                Introduce the problem and expand on what you put in the
+                title. Minimum {RICH_TEXT_MIN_LENGTH} characters, not
+                counting formatting.
               </FormDescription>
               <FormMessage className="text-red-500" />
             </FormItem>
@@ -213,7 +222,7 @@ const QuestionForm = ({ type, questionDetails }: Props) => {
                 Tags <span className="text-primary-500">*</span>
               </FormLabel>
               <FormControl className="mt-3.5">
-                <>
+                <div>
                   <Input
                     disabled={type === "edit"}
                     className="no-focus paragraph-regular background-light900_dark300 light-border-2 text-dark300_light700 min-h-[56px] border"
@@ -247,7 +256,7 @@ const QuestionForm = ({ type, questionDetails }: Props) => {
                       ))}
                     </div>
                   )}
-                </>
+                </div>
               </FormControl>
               <FormDescription className="body-regular mt-2.5 text-light-500">
                 Add up to 3 tags to describe what your question is about. You

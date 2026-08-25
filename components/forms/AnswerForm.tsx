@@ -3,28 +3,28 @@ import React, { useState } from "react";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormMessage,
 } from "../ui/form";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { AnswerSchema } from "@/lib/validations";
+import { AnswerSchema, RICH_TEXT_MIN_LENGTH } from "@/lib/validations";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Editor } from "@tinymce/tinymce-react";
 import { useTheme } from "@/context/ThemeProvider";
 import { Button } from "../ui/button";
-import Image from "next/image";
 import { createAnswer } from "@/lib/actions/answer.action";
 import { usePathname } from "next/navigation";
+import { toast } from "../ui/use-toast";
+import { getErrorMessage } from "@/lib/utils";
 
 interface Props {
-  question: string;
   questionId: string;
-  isAuthenticated: boolean;
 }
 
-const AnswerForm = ({ question, questionId, isAuthenticated }: Props) => {
+const AnswerForm = ({ questionId }: Props) => {
   const pathname = usePathname();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { mode } = useTheme();
@@ -34,8 +34,6 @@ const AnswerForm = ({ question, questionId, isAuthenticated }: Props) => {
       answer: "",
     },
   });
-  console.log({ question });
-  const [isSumbittingAI, setisSumbittingAI] = useState(false);
 
   const handleCreateAnswer = async (values: z.infer<typeof AnswerSchema>) => {
     setIsSubmitting(true);
@@ -47,69 +45,21 @@ const AnswerForm = ({ question, questionId, isAuthenticated }: Props) => {
       });
       form.reset();
     } catch (error) {
-      console.log(error);
+      toast({
+        title: "Couldn't post answer",
+        description: getErrorMessage(error),
+        variant: "destructive",
+      });
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const generateAIAnswer = async () => {
-    if (!isAuthenticated) return;
-
-    setisSumbittingAI(true);
-
-    try {
-      // API CALL
-
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}/api/chatgpt`,
-        {
-          method: "POST",
-          body: JSON.stringify({ question }),
-        }
-      );
-
-      const aiAnswer = await response.json();
-
-      const formattedAnswer = aiAnswer.reply.replace(/\n/g, "<br />");
-
-      form.setValue("answer", formattedAnswer, {
-        shouldDirty: true,
-        shouldValidate: true,
-      });
-      // Toast Notification
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setisSumbittingAI(false);
-    }
-  };
   return (
     <div>
-      <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-center sm:gap-2">
-        <h4 className="paragraph-semibold text-dark400_light800">
-          Write your answer here
-        </h4>
-        <Button
-          onClick={generateAIAnswer}
-          className="btn light-border-2 gap-1.5 rounded-md px-4 py-2.5 text-primary-500 shadow-none dark:text-primary-500"
-        >
-          {isSumbittingAI ? (
-            <>Generating...</>
-          ) : (
-            <>
-              <Image
-                src="/assets/icons/stars.svg"
-                alt="star"
-                width={12}
-                height={12}
-                className="object-contain"
-              />
-              Generate AI Answer
-            </>
-          )}
-        </Button>
-      </div>
+      <h4 className="paragraph-semibold text-dark400_light800">
+        Write your answer here
+      </h4>
       <Form {...form}>
         <form
           className="mt-6 flex w-full flex-col gap-10"
@@ -159,7 +109,10 @@ const AnswerForm = ({ question, questionId, isAuthenticated }: Props) => {
                     }}
                   />
                 </FormControl>
-
+                <FormDescription className="body-regular mt-2.5 text-light-500">
+                  Minimum {RICH_TEXT_MIN_LENGTH} characters, not counting
+                  formatting.
+                </FormDescription>
                 <FormMessage className="text-red-500" />
               </FormItem>
             )}

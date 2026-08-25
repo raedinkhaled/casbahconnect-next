@@ -27,6 +27,5 @@ export const config = {
     "/ask-question/:path*",
     "/profile/edit/:path*",
     "/question/edit/:path*",
-    "/api/chatgpt/:path*",
   ],
 };

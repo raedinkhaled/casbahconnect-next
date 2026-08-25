@@ -125,11 +125,7 @@ export default async function QuestionPage({ params, searchParams }: URLProps) {
       />
 
       {currentUser ? (
-        <AnswerForm
-          isAuthenticated
-          question={question.content}
-          questionId={String(question._id)}
-        />
+        <AnswerForm questionId={String(question._id)} />
       ) : (
         <p className="body-regular text-dark400_light700 mt-10">
           <Link className="primary-text-gradient font-semibold" href={`/sign-in?callbackUrl=/question/${id}`}>
