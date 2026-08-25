@@ -25,28 +25,30 @@ type HomeQuestion = Awaited<ReturnType<typeof getQuestions>>["questions"][number
 
 export default async function Home({ searchParams }: SearchParamsProps) {
   const query = await searchParams;
-  const currentUser = await getCurrentUser();
-  const userId = currentUser ? String(currentUser._id) : undefined;
-  let result;
+
+  let currentUser, result;
   if (query.filter === "recommended") {
-    if (userId) {
-      result = await getRecommendedQuestions({
-        searchQuery: query.q,
-        page: query.page ? +query.page : 1,
-      });
-    } else {
-      result = {
-        questions: [],
-        isNext: false,
-      };
-    }
+    // getRecommendedQuestions needs the signed-in user's id, so it can't
+    // start until getCurrentUser resolves.
+    currentUser = await getCurrentUser();
+    const userId = currentUser ? String(currentUser._id) : undefined;
+    result = userId
+      ? await getRecommendedQuestions({
+          searchQuery: query.q,
+          page: query.page ? +query.page : 1,
+        })
+      : { questions: [], isNext: false };
   } else {
-    result = await getQuestions({
-      searchQuery: query.q,
-      filter: query.filter,
-      page: query.page ? +query.page : 1,
-    });
+    [currentUser, result] = await Promise.all([
+      getCurrentUser(),
+      getQuestions({
+        searchQuery: query.q,
+        filter: query.filter,
+        page: query.page ? +query.page : 1,
+      }),
+    ]);
   }
+  const userId = currentUser ? String(currentUser._id) : undefined;
 
   return (
     <>
