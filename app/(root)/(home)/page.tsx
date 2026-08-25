@@ -22,15 +22,16 @@ export const metadata: Metadata = {
 };
 
 export default async function Home({ searchParams }: SearchParamsProps) {
+  const query = await searchParams;
   const currentUser = await getCurrentUser();
   const userId = currentUser ? String(currentUser._id) : undefined;
   let result;
-  if (searchParams?.filter === "recommended") {
+  if (query.filter === "recommended") {
     if (userId) {
       result = await getRecommendedQuestions({
         userId,
-        searchQuery: searchParams.q,
-        page: searchParams.page ? +searchParams.page : 1,
+        searchQuery: query.q,
+        page: query.page ? +query.page : 1,
       });
     } else {
       result = {
@@ -40,9 +41,9 @@ export default async function Home({ searchParams }: SearchParamsProps) {
     }
   } else {
     result = await getQuestions({
-      searchQuery: searchParams.q,
-      filter: searchParams.filter,
-      page: searchParams.page ? +searchParams.page : 1,
+      searchQuery: query.q,
+      filter: query.filter,
+      page: query.page ? +query.page : 1,
     });
   }
 
@@ -100,7 +101,7 @@ export default async function Home({ searchParams }: SearchParamsProps) {
       </div>
       <div className="mt-10">
         <Pagination
-          pageNumber={searchParams?.page ? +searchParams.page : 1}
+          pageNumber={query.page ? +query.page : 1}
           isNext={result.isNext}
         />
       </div>

@@ -13,13 +13,14 @@ import { getCurrentUser } from "@/lib/auth-user";
 import { redirect } from "next/navigation";
 
 export default async function Collection({ searchParams }: SearchParamsProps) {
+  const query = await searchParams;
   const currentUser = await getCurrentUser();
   if (!currentUser) redirect("/sign-in?callbackUrl=/collection");
 
   const result = await getSavedQuestions({
-    searchQuery: searchParams.q,
-    filter: searchParams.filter,
-    page: searchParams.page ? +searchParams.page : 1,
+    searchQuery: query.q,
+    filter: query.filter,
+    page: query.page ? +query.page : 1,
   });
 
   return (
@@ -68,7 +69,7 @@ export default async function Collection({ searchParams }: SearchParamsProps) {
 
       <div className="mt-10">
         <Pagination
-          pageNumber={searchParams?.page ? +searchParams.page : 1}
+          pageNumber={query.page ? +query.page : 1}
           isNext={result.isNext}
         />
       </div>

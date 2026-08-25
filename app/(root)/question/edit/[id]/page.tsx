@@ -2,17 +2,17 @@ import QuestionForm from "@/components/forms/QuestionForm";
 import { getQuestionById } from "@/lib/actions/question.action";
 import { ParamsProps } from "@/types";
 import { getCurrentUser } from "@/lib/auth-user";
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import React from "react";
 
 const Page = async ({ params }: ParamsProps) => {
-  const currentUser = await getCurrentUser();
-  if (!currentUser) redirect(`/sign-in?callbackUrl=/question/edit/${params.id}`);
+  const [{ id }, currentUser] = await Promise.all([params, getCurrentUser()]);
+  if (!currentUser) redirect(`/sign-in?callbackUrl=/question/edit/${id}`);
 
-  const result = await getQuestionById({ questionId: params.id });
-  if (!result) throw new Error("Question not found");
+  const result = await getQuestionById({ questionId: id });
+  if (!result) notFound();
   if (String(result.author._id) !== String(currentUser._id)) {
-    redirect(`/question/${params.id}`);
+    redirect(`/question/${id}`);
   }
 
   return (

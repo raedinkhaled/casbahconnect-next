@@ -1,10 +1,11 @@
 import { getUserAnswers } from "@/lib/actions/user.action";
-import { SearchParamsProps } from "@/types";
+import type { RouteSearchParams } from "@/types";
 import React from "react";
 import AnswerCard from "../cards/AnswerCard";
 import Pagination from "./Pagination";
 
-interface Props extends SearchParamsProps {
+interface Props {
+  searchParams: RouteSearchParams;
   userId: string;
   viewerId?: string | null;
 }

@@ -7,10 +7,11 @@ import { URLProps } from "@/types";
 import React from "react";
 
 const Page = async ({ params, searchParams }: URLProps) => {
+  const [{ id }, query] = await Promise.all([params, searchParams]);
   const result = await getQuestionsByTagId({
-    tagId: params.id,
-    searchQuery: searchParams.q,
-    page: searchParams.page ? +searchParams.page : 1,
+    tagId: id,
+    searchQuery: query.q,
+    page: query.page ? +query.page : 1,
   });
 
   return (
@@ -19,7 +20,7 @@ const Page = async ({ params, searchParams }: URLProps) => {
 
       <div className="mt-11 w-full">
         <LoacalSearch
-          route={`/tags/${params.id}`}
+          route={`/tags/${id}`}
           iconPosition="left"
           imgSrc="/assets/icons/search.svg"
           placeholder="Search for tag questions..."
@@ -29,7 +30,7 @@ const Page = async ({ params, searchParams }: URLProps) => {
 
       <div className="mt-10 flex w-full flex-col gap-6">
         {result.questions.length > 0 ? (
-          result.questions.map((question: any) => (
+          result.questions.map((question) => (
             <QuestionCard
               key={question._id}
               _id={question._id}
@@ -54,7 +55,7 @@ const Page = async ({ params, searchParams }: URLProps) => {
 
       <div className="mt-10">
         <Pagination
-          pageNumber={searchParams?.page ? +searchParams.page : 1}
+          pageNumber={query.page ? +query.page : 1}
           isNext={result.isNext}
         />
       </div>

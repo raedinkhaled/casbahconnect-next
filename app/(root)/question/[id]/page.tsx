@@ -1,3 +1,7 @@
+import Image from "next/image";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+
 import AnswerForm from "@/components/forms/AnswerForm";
 import AllAnswers from "@/components/shared/AllAnswers";
 import Metric from "@/components/shared/Metric";
@@ -7,98 +11,101 @@ import Votes from "@/components/shared/Votes";
 import { getQuestionById } from "@/lib/actions/question.action";
 import { getCurrentUser } from "@/lib/auth-user";
 import { formatNumber, getTimeStamp } from "@/lib/utils";
-import Image from "next/image";
-import Link from "next/link";
-import React from "react";
+import type { URLProps } from "@/types";
 
-const Page = async ({ params, searchParams }: any) => {
-  const currentUser = await getCurrentUser();
-  const result = await getQuestionById({ questionId: params.id });
+export default async function QuestionPage({ params, searchParams }: URLProps) {
+  const [{ id }, query, currentUser] = await Promise.all([
+    params,
+    searchParams,
+    getCurrentUser(),
+  ]);
+  const question = await getQuestionById({ questionId: id });
+  if (!question) notFound();
 
-  let questionContent = "";
+  const userId = currentUser ? String(currentUser._id) : undefined;
+  const authorImage =
+    question.author.picture ||
+    question.author.image ||
+    "/assets/images/default-logo.svg";
+  const authorName =
+    question.author.name || question.author.email.split("@")[0];
+  const hasUpvoted = question.upvotes.some(
+    (vote: unknown) => String(vote) === userId,
+  );
+  const hasDownvoted = question.downvotes.some(
+    (vote: unknown) => String(vote) === userId,
+  );
+  const hasSaved = Boolean(
+    currentUser?.saved.some((saved: unknown) => String(saved) === String(question._id)),
+  );
 
-  if (result) {
-    questionContent = result.content;
-    console.log({ questionContent });
-  }
   return (
     <>
       <div className="flex-start w-full flex-col">
         <div className="flex w-full flex-col-reverse justify-between gap-5 sm:flex-row sm:items-center sm:gap-2">
           <Link
-            href={`/profile/${result.author._id}`}
             className="flex items-center justify-start gap-1"
+            href={`/profile/${question.author._id}`}
           >
             <Image
-              src={
-                result.author.picture ||
-                result.author.image ||
-                "/assets/images/default-logo.svg"
-              }
-              alt="Author Picture"
+              alt="Author profile"
               className="rounded-full"
-              width={22}
               height={22}
+              src={authorImage}
+              width={22}
             />
             <p className="paragraph-semibold text-dark300_light700">
-              {result.author.name || result.author.email.split("@")[0]}
+              {authorName}
             </p>
           </Link>
           <div className="flex justify-end">
             <Votes
+              downvotes={question.downvotes.length}
+              hasDownvoted={hasDownvoted}
+              hasSaved={hasSaved}
+              hasUpvoted={hasUpvoted}
+              itemId={String(question._id)}
               type="Question"
-              itemId={String(result._id)}
-              userId={currentUser ? String(currentUser._id) : undefined}
-              upvotes={result.upvotes.length}
-              hasUpvoted={result.upvotes.some(
-                (id: unknown) => String(id) === String(currentUser?._id),
-              )}
-              downvotes={result.downvotes.length}
-              hasDownvoted={result.downvotes.some(
-                (id: unknown) => String(id) === String(currentUser?._id),
-              )}
-              hasSaved={Boolean(
-                currentUser?.saved.some(
-                  (id: unknown) => String(id) === String(result._id),
-                ),
-              )}
+              upvotes={question.upvotes.length}
+              userId={userId}
             />
           </div>
         </div>
-        <h2 className="h2-semibold text-dark200_light900 mt-3.5 w-full text-left">
-          {result.title}
-        </h2>
+        <h1 className="h2-semibold text-dark200_light900 mt-3.5 w-full text-left">
+          {question.title}
+        </h1>
       </div>
 
       <div className="mb-8 mt-5 flex flex-wrap gap-4">
         <Metric
-          imgUrl="/assets/icons/clock.svg"
           alt="clock icon"
-          value={` asked ${getTimeStamp(result.createdAt)}`}
+          imgUrl="/assets/icons/clock.svg"
+          textStyles="small-medium text-dark400_light800"
           title="Asked"
-          textStyles="small-medium text-dark400_light800"
+          value={` ${getTimeStamp(question.createdAt)}`}
         />
         <Metric
-          imgUrl="/assets/icons/message.svg"
           alt="message"
-          value={formatNumber(result.answers.length)}
-          title="Answers"
+          imgUrl="/assets/icons/message.svg"
           textStyles="small-medium text-dark400_light800"
+          title="Answers"
+          value={formatNumber(question.answers.length)}
         />
         <Metric
-          imgUrl="/assets/icons/eye.svg"
           alt="eye"
-          value={formatNumber(result.views)}
-          title="Views"
+          imgUrl="/assets/icons/eye.svg"
           textStyles="small-medium text-dark400_light800"
+          title="Views"
+          value={formatNumber(question.views)}
         />
       </div>
-      <ParseHTML data={result.content} />
+
+      <ParseHTML data={question.content} />
       <div className="mt-8 flex flex-wrap gap-2">
-        {result.tags.map((tag: any) => (
+        {question.tags.map((tag: any) => (
           <RenderTag
-            key={tag._id}
-            _id={tag._id}
+            _id={String(tag._id)}
+            key={String(tag._id)}
             name={tag.name}
             showCount={false}
           />
@@ -106,25 +113,22 @@ const Page = async ({ params, searchParams }: any) => {
       </div>
 
       <AllAnswers
-        questionId={result._id}
-        userId={currentUser ? String(currentUser._id) : undefined}
-        totalAnswers={result.answers.length}
-        page={searchParams?.page}
-        filter={searchParams?.filter}
+        filter={query.filter}
+        page={query.page ? Number(query.page) : 1}
+        questionId={String(question._id)}
+        totalAnswers={question.answers.length}
+        userId={userId}
       />
 
       {currentUser ? (
         <AnswerForm
           isAuthenticated
-          question={questionContent}
-          questionId={JSON.stringify(result._id)}
+          question={question.content}
+          questionId={String(question._id)}
         />
       ) : (
         <p className="body-regular text-dark400_light700 mt-10">
-          <Link
-            className="primary-text-gradient font-semibold"
-            href={`/sign-in?callbackUrl=/question/${params.id}`}
-          >
+          <Link className="primary-text-gradient font-semibold" href={`/sign-in?callbackUrl=/question/${id}`}>
             Sign in
           </Link>{" "}
           to post an answer.
@@ -132,6 +136,4 @@ const Page = async ({ params, searchParams }: any) => {
       )}
     </>
   );
-};
-
-export default Page;
+}

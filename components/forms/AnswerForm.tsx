@@ -42,7 +42,7 @@ const AnswerForm = ({ question, questionId, isAuthenticated }: Props) => {
     try {
       await createAnswer({
         content: values.answer,
-        question: JSON.parse(questionId),
+        question: questionId,
         path: pathname,
       });
       form.reset();

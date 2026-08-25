@@ -13,8 +13,12 @@ import Link from "next/link";
 import React from "react";
 
 const Page = async ({ params, searchParams }: URLProps) => {
-  const currentUser = await getCurrentUser();
-  const userInfo = await getUserInfo({ userId: params.id });
+  const [{ id }, query, currentUser] = await Promise.all([
+    params,
+    searchParams,
+    getCurrentUser(),
+  ]);
+  const userInfo = await getUserInfo({ userId: id });
   const viewerId = currentUser ? String(currentUser._id) : undefined;
   const profileImage =
     userInfo.user.picture ||
@@ -99,14 +103,14 @@ const Page = async ({ params, searchParams }: URLProps) => {
             value="top-posts"
           >
             <QuestionTab
-              searchParams={searchParams}
+              searchParams={query}
               userId={String(userInfo.user._id)}
               viewerId={viewerId}
             />
           </TabsContent>
           <TabsContent value="answers" className="flex w-full flex-col gap-6">
             <AnswersTab
-              searchParams={searchParams}
+              searchParams={query}
               userId={String(userInfo.user._id)}
               viewerId={viewerId}
             />

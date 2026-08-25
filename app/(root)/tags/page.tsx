@@ -11,10 +11,11 @@ import Link from "next/link";
 import React from "react";
 
 const Page = async ({ searchParams }: SearchParamsProps) => {
+  const query = await searchParams;
   const result = await getAllTags({
-    searchQuery: searchParams.q,
-    filter: searchParams.filter,
-    page: searchParams.page ? +searchParams.page : 1,
+    searchQuery: query.q,
+    filter: query.filter,
+    page: query.page ? +query.page : 1,
   });
   return (
     <>
@@ -36,7 +37,7 @@ const Page = async ({ searchParams }: SearchParamsProps) => {
 
       <section className="mt-12 flex flex-wrap gap-4">
         {result.tags.length > 0 ? (
-          result.tags.map((tag: any) => (
+          result.tags.map((tag) => (
             <Link
               href={`/tags/${tag._id}`}
               key={tag._id}
@@ -69,7 +70,7 @@ const Page = async ({ searchParams }: SearchParamsProps) => {
 
       <div className="mt-10">
         <Pagination
-          pageNumber={searchParams?.page ? +searchParams.page : 1}
+          pageNumber={query.page ? +query.page : 1}
           isNext={result.isNext}
         />
       </div>
