@@ -25,10 +25,9 @@ import { useTheme } from "@/context/ThemeProvider";
 
 interface Props {
   type?: string;
-  mongoUserId: string;
   questionDetails?: string;
 }
-const QuestionForm = ({ type, mongoUserId, questionDetails }: Props) => {
+const QuestionForm = ({ type, questionDetails }: Props) => {
   const { mode } = useTheme();
   const editorRef = useRef(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -66,7 +65,6 @@ const QuestionForm = ({ type, mongoUserId, questionDetails }: Props) => {
           title: values.title,
           content: values.explanation,
           tags: values.tags,
-          author: JSON.parse(mongoUserId),
           path: pathname,
         });
         router.push("/");

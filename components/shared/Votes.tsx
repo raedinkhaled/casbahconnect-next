@@ -15,7 +15,7 @@ import { toast } from "../ui/use-toast";
 interface Props {
   type: string;
   itemId: string;
-  userId: string;
+  userId?: string;
   upvotes: number;
   hasUpvoted: boolean;
   downvotes: number;
@@ -36,11 +36,18 @@ const Votes = ({
   const pathname = usePathname();
   const router = useRouter();
   const handleSave = async () => {
+    if (!userId) {
+      return toast({
+        title: "Please sign in",
+        description: "You must be signed in to save a question",
+      });
+    }
+
     await toggleSaveQuestion({
-      userId: JSON.parse(userId),
-      questionId: JSON.parse(itemId),
+      questionId: itemId,
       path: pathname,
     });
+    router.refresh();
 
     return toast({
       title: `Question ${!hasSaved ? "saved" : "removed from your collection"}`,
@@ -58,43 +65,33 @@ const Votes = ({
     if (action === "upvote") {
       if (type === "Question") {
         await upvoteQuestion({
-          questionId: JSON.parse(itemId),
-          userId: JSON.parse(userId),
-          hasupVoted: hasUpvoted,
-          hasdownVoted: hasDownvoted,
+          questionId: itemId,
           path: pathname,
         });
       } else if (type === "Answer") {
         await upvoteAnswer({
-          answerId: JSON.parse(itemId),
-          userId: JSON.parse(userId),
-          hasupVoted: hasUpvoted,
-          hasdownVoted: hasDownvoted,
+          answerId: itemId,
           path: pathname,
         });
       }
+      router.refresh();
       return toast({
-        title: `Upvote ${!hasUpvoted ? "added" : "removed+"}`,
+        title: `Upvote ${!hasUpvoted ? "added" : "removed"}`,
         variant: !hasUpvoted ? "default" : "destructive",
       });
     } else if (action === "downvote") {
       if (type === "Question") {
         await downvoteQuestion({
-          questionId: JSON.parse(itemId),
-          userId: JSON.parse(userId),
-          hasupVoted: hasUpvoted,
-          hasdownVoted: hasDownvoted,
+          questionId: itemId,
           path: pathname,
         });
       } else if (type === "Answer") {
         await downvoteAnswer({
-          answerId: JSON.parse(itemId),
-          userId: JSON.parse(userId),
-          hasupVoted: hasUpvoted,
-          hasdownVoted: hasDownvoted,
+          answerId: itemId,
           path: pathname,
         });
       }
+      router.refresh();
       return toast({
         title: `Downvote ${!hasDownvoted ? "added" : "removed"}`,
         variant: !hasDownvoted ? "default" : "destructive",
@@ -104,8 +101,7 @@ const Votes = ({
 
   useEffect(() => {
     viewQuestion({
-      questionId: JSON.parse(itemId),
-      userId: userId ? JSON.parse(userId) : undefined,
+      questionId: itemId,
     });
   }, [itemId, userId, pathname, router]);
 

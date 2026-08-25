@@ -10,6 +10,10 @@ const Page = async ({ params }: ParamsProps) => {
   if (!currentUser) redirect(`/sign-in?callbackUrl=/question/edit/${params.id}`);
 
   const result = await getQuestionById({ questionId: params.id });
+  if (!result) throw new Error("Question not found");
+  if (String(result.author._id) !== String(currentUser._id)) {
+    redirect(`/question/${params.id}`);
+  }
 
   return (
     <>
@@ -17,7 +21,6 @@ const Page = async ({ params }: ParamsProps) => {
       <div className="mt-9">
         <QuestionForm
           type="edit"
-          mongoUserId={JSON.stringify(currentUser._id)}
           questionDetails={JSON.stringify(result)}
         />
       </div>

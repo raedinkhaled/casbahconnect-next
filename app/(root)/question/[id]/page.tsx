@@ -47,13 +47,21 @@ const Page = async ({ params, searchParams }: any) => {
           <div className="flex justify-end">
             <Votes
               type="Question"
-              itemId={JSON.stringify(result._id)}
-              userId={JSON.stringify(currentUser?._id)}
+              itemId={String(result._id)}
+              userId={currentUser ? String(currentUser._id) : undefined}
               upvotes={result.upvotes.length}
-              hasUpvoted={result.upvotes.includes(currentUser?._id)}
+              hasUpvoted={result.upvotes.some(
+                (id: unknown) => String(id) === String(currentUser?._id),
+              )}
               downvotes={result.downvotes.length}
-              hasDownvoted={result.downvotes.includes(currentUser?._id)}
-              hasSaved={currentUser?.saved.includes(result._id)}
+              hasDownvoted={result.downvotes.some(
+                (id: unknown) => String(id) === String(currentUser?._id),
+              )}
+              hasSaved={Boolean(
+                currentUser?.saved.some(
+                  (id: unknown) => String(id) === String(result._id),
+                ),
+              )}
             />
           </div>
         </div>
@@ -99,17 +107,29 @@ const Page = async ({ params, searchParams }: any) => {
 
       <AllAnswers
         questionId={result._id}
-        userId={currentUser?._id}
+        userId={currentUser ? String(currentUser._id) : undefined}
         totalAnswers={result.answers.length}
         page={searchParams?.page}
         filter={searchParams?.filter}
       />
 
-      <AnswerForm
-        question={questionContent}
-        questionId={JSON.stringify(result._id)}
-        authorId={JSON.stringify(currentUser?._id)}
-      />
+      {currentUser ? (
+        <AnswerForm
+          isAuthenticated
+          question={questionContent}
+          questionId={JSON.stringify(result._id)}
+        />
+      ) : (
+        <p className="body-regular text-dark400_light700 mt-10">
+          <Link
+            className="primary-text-gradient font-semibold"
+            href={`/sign-in?callbackUrl=/question/${params.id}`}
+          >
+            Sign in
+          </Link>{" "}
+          to post an answer.
+        </p>
+      )}
     </>
   );
 };

@@ -13,14 +13,14 @@ const EditDeleteAction = ({ type, itemId }: Props) => {
   const pathname = usePathname();
   const router = useRouter();
   const handleEdit = () => {
-    router.push(`/question/edit/${JSON.parse(itemId)}`);
+    router.push(`/question/edit/${itemId}`);
   };
 
   const handleDelete = async () => {
     if (type === "Question") {
-      await deleteQuestion({ questionId: JSON.parse(itemId), path: pathname });
+      await deleteQuestion({ questionId: itemId, path: pathname });
     } else if (type === "Answer") {
-      await deleteAnswer({ answerId: JSON.parse(itemId), path: pathname });
+      await deleteAnswer({ answerId: itemId, path: pathname });
     }
   };
   return (

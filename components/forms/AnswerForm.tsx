@@ -21,10 +21,10 @@ import { usePathname } from "next/navigation";
 interface Props {
   question: string;
   questionId: string;
-  authorId: string;
+  isAuthenticated: boolean;
 }
 
-const AnswerForm = ({ question, questionId, authorId }: Props) => {
+const AnswerForm = ({ question, questionId, isAuthenticated }: Props) => {
   const pathname = usePathname();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { mode } = useTheme();
@@ -42,7 +42,6 @@ const AnswerForm = ({ question, questionId, authorId }: Props) => {
     try {
       await createAnswer({
         content: values.answer,
-        author: JSON.parse(authorId),
         question: JSON.parse(questionId),
         path: pathname,
       });
@@ -60,7 +59,7 @@ const AnswerForm = ({ question, questionId, authorId }: Props) => {
   const editorRef = useRef(null);
 
   const generateAIAnswer = async () => {
-    if (!authorId) return;
+    if (!isAuthenticated) return;
 
     setisSumbittingAI(true);
 

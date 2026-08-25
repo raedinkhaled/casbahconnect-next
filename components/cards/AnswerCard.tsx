@@ -46,7 +46,7 @@ const AnswerCard = ({
           </h3>
         </div>
 
-        {showActionButtons && <EditDeleteAction type="Answer" itemId={JSON.stringify(_id)} />}
+        {showActionButtons && <EditDeleteAction type="Answer" itemId={String(_id)} />}
       </div>
 
       <div className="flex-between mt-6 w-full flex-wrap gap-3">

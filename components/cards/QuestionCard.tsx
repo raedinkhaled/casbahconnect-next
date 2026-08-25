@@ -49,7 +49,7 @@ const QuestionCard = ({
           </Link>
         </div>
 
-        {showActionButtons && <EditDeleteAction type="Question" itemId={JSON.stringify(_id)} />}
+        {showActionButtons && <EditDeleteAction type="Question" itemId={String(_id)} />}
       </div>
 
       <div className="mt-3.5 flex flex-wrap gap-2">

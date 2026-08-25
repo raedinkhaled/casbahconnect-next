@@ -1,9 +1,7 @@
 import { IUser } from "@/database/user.model";
-import { Schema } from "mongoose";
 
 export interface CreateAnswerParams {
   content: string;
-  author: string; // User ID
   question: string; // Question ID
   path: string;
 }
@@ -17,9 +15,6 @@ export interface GetAnswersParams {
 
 export interface AnswerVoteParams {
   answerId: string;
-  userId: string;
-  hasupVoted: boolean;
-  hasdownVoted: boolean;
   path: string;
 }
 
@@ -34,7 +29,6 @@ export interface SearchParams {
 }
 
 export interface RecommendedParams {
-  userId: string;
   page?: number;
   pageSize?: number;
   searchQuery?: string;
@@ -42,12 +36,6 @@ export interface RecommendedParams {
 
 export interface ViewQuestionParams {
   questionId: string;
-  userId: string | undefined;
-}
-
-export interface JobFilterParams {
-  query: string;
-  page: string;
 }
 
 export interface GetQuestionsParams {
@@ -61,7 +49,6 @@ export interface CreateQuestionParams {
   title: string;
   content: string;
   tags: string[];
-  author: Schema.Types.ObjectId | IUser;
   path: string;
 }
 
@@ -71,9 +58,6 @@ export interface GetQuestionByIdParams {
 
 export interface QuestionVoteParams {
   questionId: string;
-  userId: string;
-  hasupVoted: boolean;
-  hasdownVoted: boolean;
   path: string;
 }
 
@@ -116,16 +100,18 @@ export interface GetAllUsersParams {
   page?: number;
   pageSize?: number;
   filter?: string;
-  searchQuery?: string; // Add searchQuery parameter
+  searchQuery?: string;
 }
 
 export interface UpdateUserParams {
-  updateData: Partial<IUser>;
+  updateData: Pick<
+    IUser,
+    "name" | "username" | "portfolioWebsite" | "location" | "bio"
+  >;
   path: string;
 }
 
 export interface ToggleSaveQuestionParams {
-  userId: string;
   questionId: string;
   path: string;
 }
