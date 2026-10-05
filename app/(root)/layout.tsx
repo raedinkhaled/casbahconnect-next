@@ -4,6 +4,7 @@ import RightSideBar from "@/components/shared/rightsidebar/RightSideBar";
 import { Toaster } from "@/components/ui/toaster";
 import React from "react";
 import { getCurrentUser } from "@/lib/auth-user";
+import DemoNotice from "@/components/auth/DemoNotice";
 
 const Layout = async ({ children }: { children: React.ReactNode }) => {
   const currentUser = await getCurrentUser();
@@ -20,7 +21,16 @@ const Layout = async ({ children }: { children: React.ReactNode }) => {
       <div className="flex">
         <LeftSideBar userId={userId} />
         <section className="max:md:pb-14 flex min-h-screen flex-1 flex-col px-6 pb-6 pt-36 sm:px-14">
-          <div className="mx-auto w-full max-w-5xl">{children}</div>
+          <div className="mx-auto w-full max-w-5xl">
+            {currentUser?.isDemo && (
+              <DemoNotice>
+                You&apos;re exploring Casbah Connect as a demo user. Browsing and
+                searching are available; posting, voting, saving, and account
+                changes are disabled.
+              </DemoNotice>
+            )}
+            {children}
+          </div>
         </section>
         <RightSideBar />
       </div>

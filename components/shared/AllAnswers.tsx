@@ -12,6 +12,7 @@ import Pagination from "./Pagination";
 interface Props {
   questionId: string;
   userId?: string;
+  isDemo?: boolean;
   totalAnswers: number;
   page?: number;
   filter?: string;
@@ -19,6 +20,7 @@ interface Props {
 const AllAnswers = async ({
   questionId,
   userId,
+  isDemo,
   totalAnswers,
   page,
   filter,
@@ -67,6 +69,7 @@ const AllAnswers = async ({
                   type="Answer"
                   itemId={String(answer._id)}
                   userId={userId}
+                  isDemo={isDemo}
                   upvotes={answer.upvotes.length}
                   hasUpvoted={answer.upvotes.some(
                     (id: unknown) => String(id) === userId,

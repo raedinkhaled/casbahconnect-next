@@ -11,28 +11,52 @@ export default function SignInForm() {
   const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [pending, setPending] = useState<"email" | "demo" | null>(null);
 
   const callbackUrl = searchParams.get("callbackUrl") || "/";
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
-    setIsSubmitting(true);
+    setPending("email");
 
-    const result = await signIn("email", {
-      email,
-      callbackUrl,
-      redirect: false,
-    });
+    try {
+      const result = await signIn("email", {
+        email,
+        callbackUrl,
+        redirect: false,
+      });
 
-    if (result?.error) {
+      if (!result || result.error) {
+        setError("We could not send the sign-in link. Check the address and try again.");
+        return;
+      }
+
+      window.location.assign(result.url || "/verify-request");
+    } catch {
       setError("We could not send the sign-in link. Check the address and try again.");
-      setIsSubmitting(false);
-      return;
+    } finally {
+      setPending(null);
     }
+  }
 
-    window.location.assign(result?.url || "/verify-request");
+  async function handleDemoSignIn() {
+    setError(null);
+    setPending("demo");
+
+    try {
+      const result = await signIn("demo", { callbackUrl, redirect: false });
+      if (!result?.ok || !result.url) {
+        setError("We could not start demo mode. Please try again.");
+        return;
+      }
+
+      window.location.assign(result.url);
+    } catch {
+      setError("We could not start demo mode. Please try again.");
+    } finally {
+      setPending(null);
+    }
   }
 
   return (
@@ -55,14 +79,30 @@ export default function SignInForm() {
           value={email}
         />
       </div>
-      {error && <p className="body-regular text-red-500">{error}</p>}
+      {error && <p className="body-regular text-red-500" role="alert">{error}</p>}
       <Button
         className="primary-gradient min-h-12 text-light-900"
-        disabled={isSubmitting}
+        disabled={pending !== null}
         type="submit"
       >
-        {isSubmitting ? "Sending link…" : "Email me a sign-in link"}
+        {pending === "email" ? "Sending link…" : "Email me a sign-in link"}
       </Button>
+      <div className="flex items-center gap-3" aria-hidden="true">
+        <div className="light-border flex-1 border-t" />
+        <span className="small-regular text-dark400_light700">or</span>
+        <div className="light-border flex-1 border-t" />
+      </div>
+      <div className="space-y-2 text-center">
+        <Button
+          className="primary-gradient min-h-12 w-full text-light-900"
+          disabled={pending !== null}
+          onClick={handleDemoSignIn}
+          type="button"
+        >
+          {pending === "demo" ? "Starting demo…" : "Continue as Demo User"}
+        </Button>
+        <p className="small-regular text-dark400_light700">No account required</p>
+      </div>
     </form>
   );
 }

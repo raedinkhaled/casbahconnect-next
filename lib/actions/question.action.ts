@@ -8,7 +8,7 @@ import Interaction from "@/database/interaction.model";
 import Question, { type IQuestion } from "@/database/question.model";
 import Tag from "@/database/tag.model";
 import User from "@/database/user.model";
-import { requireCurrentUser } from "@/lib/auth-user";
+import { requireCurrentUser, requireWritableUser } from "@/lib/auth-user";
 import { connectToDatabase } from "@/lib/mongoose";
 import type {
   CreateQuestionParams,
@@ -56,7 +56,7 @@ export async function getQuestions(params: GetQuestionsParams) {
 }
 
 export async function createQuestion(params: CreateQuestionParams) {
-  const actor = await requireCurrentUser();
+  const actor = await requireWritableUser();
   await connectToDatabase();
   const { title, content, tags, path } = params;
 
@@ -109,7 +109,7 @@ async function voteQuestion(
   params: QuestionVoteParams,
   direction: "up" | "down",
 ) {
-  const actor = await requireCurrentUser();
+  const actor = await requireWritableUser();
   await connectToDatabase();
   const question = await Question.findById(params.questionId);
 
@@ -183,7 +183,7 @@ export async function downvoteQuestion(params: QuestionVoteParams) {
 }
 
 export async function deleteQuestion({ questionId, path }: DeleteQuestionParams) {
-  const actor = await requireCurrentUser();
+  const actor = await requireWritableUser();
   await connectToDatabase();
   const question = await Question.findById(questionId);
 
@@ -203,7 +203,7 @@ export async function deleteQuestion({ questionId, path }: DeleteQuestionParams)
 }
 
 export async function editQuestion(params: EditQuestionParams) {
-  const actor = await requireCurrentUser();
+  const actor = await requireWritableUser();
   await connectToDatabase();
   const question = await Question.findById(params.questionId);
 
@@ -223,6 +223,7 @@ export async function getHotQuestions() {
 
 export async function getRecommendedQuestions(params: RecommendedParams) {
   const actor = await requireCurrentUser();
+  if (actor.isDemo) return getQuestions({ ...params, filter: "frequent" });
   await connectToDatabase();
   const { page = 1, pageSize = 20, searchQuery } = params;
   const skipAmount = (page - 1) * pageSize;

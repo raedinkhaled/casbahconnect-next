@@ -2,10 +2,17 @@ import { MongoDBAdapter } from "@auth/mongodb-adapter";
 import type { Adapter } from "next-auth/adapters";
 import type { NextAuthOptions } from "next-auth";
 import EmailProvider from "next-auth/providers/email";
+import CredentialsProvider from "next-auth/providers/credentials";
 
 import User from "@/database/user.model";
 import { connectToDatabase } from "@/lib/mongoose";
 import clientPromise from "@/lib/mongodb";
+import {
+  DEMO_USER_EMAIL,
+  DEMO_USER_ID,
+  DEMO_USER_IMAGE,
+  DEMO_USER_NAME,
+} from "@/lib/demo";
 
 const THIRTY_DAYS = 30 * 24 * 60 * 60;
 const TEN_MINUTES = 10 * 60;
@@ -29,6 +36,22 @@ export const authOptions: NextAuthOptions = {
       from: process.env.EMAIL_FROM ?? "Casbah Connect <auth@example.com>",
       maxAge: TEN_MINUTES,
     }),
+    CredentialsProvider({
+      id: "demo",
+      name: "Demo User",
+      credentials: {},
+      async authorize() {
+        // Ignore submitted credentials: this provider can only issue the
+        // fixed, unprivileged demo identity, never impersonate a real user.
+        return {
+          id: DEMO_USER_ID,
+          name: DEMO_USER_NAME,
+          email: DEMO_USER_EMAIL,
+          image: DEMO_USER_IMAGE,
+          isDemo: true,
+        };
+      },
+    }),
   ],
   pages: {
     signIn: "/sign-in",
@@ -43,13 +66,17 @@ export const authOptions: NextAuthOptions = {
     maxAge: THIRTY_DAYS,
   },
   callbacks: {
-    async jwt({ token, user }) {
-      if (user) token.id = user.id;
+    async jwt({ token, user, account }) {
+      if (user) {
+        token.id = user.id;
+        token.isDemo = account?.provider === "demo" && user.id === DEMO_USER_ID;
+      }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
         session.user.id = String(token.id ?? token.sub ?? "");
+        session.user.isDemo = token.isDemo === true;
       }
       return session;
     },

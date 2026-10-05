@@ -1,4 +1,5 @@
 import ProfileForm from "@/components/forms/ProfileForm";
+import DemoNotice from "@/components/auth/DemoNotice";
 
 import { getCurrentUser } from "@/lib/auth-user";
 import { redirect } from "next/navigation";
@@ -13,7 +14,11 @@ const Page = async () => {
       <h1 className="h1-bold text-dark100_light900">Edit Profile</h1>
 
       <div className="mt-9">
-        <ProfileForm user={JSON.stringify(currentUser)} />
+        {currentUser.isDemo ? (
+          <DemoNotice />
+        ) : (
+          <ProfileForm user={JSON.stringify(currentUser)} />
+        )}
       </div>
     </>
   );

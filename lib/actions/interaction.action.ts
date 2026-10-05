@@ -4,10 +4,15 @@ import Question from "@/database/question.model";
 import { connectToDatabase } from "../mongoose";
 import { ViewQuestionParams } from "./shared.types";
 import Interaction from "@/database/interaction.model";
-import { getCurrentUser } from "@/lib/auth-user";
+import { getCurrentSession, getCurrentUser } from "@/lib/auth-user";
+import { DEMO_USER_ID } from "@/lib/demo";
 
 export async function viewQuestion(params: ViewQuestionParams) {
   try {
+    const session = await getCurrentSession();
+    // Browsing remains available without changing counts or shared history.
+    if (session?.user?.isDemo || session?.user?.id === DEMO_USER_ID) return;
+
     await connectToDatabase();
 
     const { questionId } = params;

@@ -6,7 +6,7 @@ import Answer from "@/database/answer.model";
 import Interaction from "@/database/interaction.model";
 import Question from "@/database/question.model";
 import User from "@/database/user.model";
-import { requireCurrentUser } from "@/lib/auth-user";
+import { requireWritableUser } from "@/lib/auth-user";
 import { connectToDatabase } from "@/lib/mongoose";
 import type {
   AnswerVoteParams,
@@ -18,7 +18,7 @@ import type {
 const sameId = (left: unknown, right: unknown) => String(left) === String(right);
 
 export async function createAnswer(params: CreateAnswerParams) {
-  const actor = await requireCurrentUser();
+  const actor = await requireWritableUser();
   await connectToDatabase();
   const question = await Question.findById(params.question);
 
@@ -73,7 +73,7 @@ export async function getAnwsers(params: GetAnswersParams) {
 }
 
 async function voteAnswer(params: AnswerVoteParams, direction: "up" | "down") {
-  const actor = await requireCurrentUser();
+  const actor = await requireWritableUser();
   await connectToDatabase();
   const answer = await Answer.findById(params.answerId);
 
@@ -145,7 +145,7 @@ export async function downvoteAnswer(params: AnswerVoteParams) {
 }
 
 export async function deleteAnswer({ answerId, path }: DeleteAnswerParams) {
-  const actor = await requireCurrentUser();
+  const actor = await requireWritableUser();
   await connectToDatabase();
   const answer = await Answer.findById(answerId);
 

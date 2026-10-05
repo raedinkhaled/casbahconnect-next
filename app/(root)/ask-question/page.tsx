@@ -1,4 +1,5 @@
 import QuestionForm from "@/components/forms/QuestionForm";
+import DemoNotice from "@/components/auth/DemoNotice";
 import { getCurrentUser } from "@/lib/auth-user";
 
 import { redirect } from "next/navigation";
@@ -12,7 +13,7 @@ const AskQuestion = async () => {
     <div>
       <h1 className="h1-bold text-dark100_light900">Ask a Question</h1>
       <div className="mt-9">
-        <QuestionForm />
+        {currentUser.isDemo ? <DemoNotice /> : <QuestionForm />}
       </div>
     </div>
   );

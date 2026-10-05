@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import AnswerForm from "@/components/forms/AnswerForm";
+import DemoNotice from "@/components/auth/DemoNotice";
 import AllAnswers from "@/components/shared/AllAnswers";
 import Metric from "@/components/shared/Metric";
 import ParseHTML from "@/components/shared/ParseHTML";
@@ -72,6 +73,7 @@ export default async function QuestionPage({ params, searchParams }: URLProps) {
               type="Question"
               upvotes={question.upvotes.length}
               userId={userId}
+              isDemo={currentUser?.isDemo}
             />
           </div>
         </div>
@@ -122,9 +124,12 @@ export default async function QuestionPage({ params, searchParams }: URLProps) {
         questionId={String(question._id)}
         totalAnswers={question.answers.length}
         userId={userId}
+        isDemo={currentUser?.isDemo}
       />
 
-      {currentUser ? (
+      {currentUser?.isDemo ? (
+        <div className="mt-10"><DemoNotice /></div>
+      ) : currentUser ? (
         <AnswerForm questionId={String(question._id)} />
       ) : (
         <p className="body-regular text-dark400_light700 mt-10">

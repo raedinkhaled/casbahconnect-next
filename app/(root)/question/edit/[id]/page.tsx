@@ -1,4 +1,5 @@
 import QuestionForm from "@/components/forms/QuestionForm";
+import DemoNotice from "@/components/auth/DemoNotice";
 import { getQuestionById } from "@/lib/actions/question.action";
 import { ParamsProps } from "@/types";
 import { getCurrentUser } from "@/lib/auth-user";
@@ -8,6 +9,7 @@ import React from "react";
 const Page = async ({ params }: ParamsProps) => {
   const [{ id }, currentUser] = await Promise.all([params, getCurrentUser()]);
   if (!currentUser) redirect(`/sign-in?callbackUrl=/question/edit/${id}`);
+  if (currentUser.isDemo) return <DemoNotice />;
 
   const result = await getQuestionById({ questionId: id });
   if (!result) notFound();

@@ -1,4 +1,5 @@
 import QuestionCard from "@/components/cards/QuestionCard";
+import DemoNotice from "@/components/auth/DemoNotice";
 
 import Filter from "@/components/shared/Filter";
 import NoResult from "@/components/shared/NoResult";
@@ -59,6 +60,11 @@ export default async function Collection({ searchParams }: SearchParamsProps) {
               viewerId={String(currentUser._id)}
             />
           ))
+        ) : currentUser.isDemo ? (
+          <DemoNotice>
+            Saving questions is disabled in demo mode. Browse the question feed
+            and use search to explore existing content.
+          </DemoNotice>
         ) : (
           <NoResult
             title="There's no saved question to show"

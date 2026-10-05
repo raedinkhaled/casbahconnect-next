@@ -17,6 +17,7 @@ A Stack Overflow–style Q&A platform for developers: ask questions, post answer
 - **Search** across questions, answers, tags, and users from the global search bar
 - **Profiles** with reputation points, gold/silver/bronze badges, and tabs for a user's top questions and answers
 - **Passwordless sign-in** — no password to create, remember, or leak; a magic link is emailed on request
+- **One-click demo sign-in** — reviewers can explore without an email or account
 - **Light / Dark / System** theme, fully responsive layout
 
 |                                    |                                          |
@@ -38,12 +39,14 @@ A Stack Overflow–style Q&A platform for developers: ask questions, post answer
 
 Sign-in is fully passwordless: a visitor enters their email, NextAuth's `EmailProvider` sends a one-time magic link through Resend, and clicking it creates (or logs into) a MongoDB-backed account via `@auth/mongodb-adapter`. Sessions are signed JWTs valid for 30 days, and `session.user.id` is the account's MongoDB `_id` — that `_id` is the *only* identity used anywhere in the app, in profile URLs, authorship, votes, and saves.
 
+Reviewers can also choose **Continue as Demo User**. The `demo` Credentials provider has no input fields and always returns the fixed, unprivileged identity `Demo User` (`demo@casbah-connect.local`). Its reserved ObjectId (`000000000000000000000001`) is compatible with the existing profile routes. The demo user is constructed in memory and is never saved to MongoDB. `isDemo` is set from the sign-in provider in the JWT and exposed as `session.user.isDemo`; existing email sessions default to `false`. The MongoDB adapter, SMTP configuration, and existing JWT session strategy remain unchanged. No new environment variables or seed step are required.
+
 Route access is enforced in two layers:
 
 1. **Edge middleware** (`proxy.ts`) redirects unauthenticated visitors away from protected pages (`/ask-question`, `/collection`, `/profile/edit`, `/question/edit/*`) before they render.
-2. **Server actions** (`lib/actions/*`) never trust a client-supplied user id. Every mutation — creating a question, voting, saving, editing — derives the acting user from the server session via a shared `requireCurrentUser()` helper, and edits/deletes additionally verify the caller owns the resource before touching it.
+2. **Server actions** (`lib/actions/*`) never trust a client-supplied user id. Every authenticated mutation — creating a question, voting, saving, editing — derives the acting user from the server session via `requireWritableUser()`, which rejects demo sessions before database access. Edits/deletes additionally verify the caller owns the resource before touching it. Future mutations must use the same guard.
 
-Public reads (browsing questions, profiles, tags) stay open to anyone; every write requires a real session.
+Public reads (browsing questions, profiles, tags) stay open to anyone. Demo mode is read-only: creating/editing/deleting questions and answers, voting (which changes reputation), saving questions, and profile changes are disabled. Demo question views also skip view-count and interaction writes. Demo collections and profile activity are empty; recommended questions fall back to the frequent feed. Search, filters, pagination, themes, and sign-out remain available. Demo mode uses the application's existing public content, so MongoDB must still be reachable for browsing. It does not simulate posting or maintain personal/shared demo state.
 
 ## Security highlights
 
@@ -106,7 +109,7 @@ constants/              # Static config (nav links, filters, badge thresholds)
 ## Known limitations
 
 - Search is a case-insensitive scan across collections, not a dedicated search index — adequate at this scale, but would move to a proper search index (e.g. Atlas Search) if usage grew.
-- No automated test suite yet; correctness is currently backed by TypeScript, ESLint, and manual QA.
+- `npm test` covers demo authentication, JWT/session flags, mutation restrictions, and normal-user authorization using isolated database/SMTP substitutes. Live email delivery and browser interaction still need deployment QA.
 - The "Find Jobs" section is a placeholder for a future job board — not yet implemented.
 
 ## Recent upgrade

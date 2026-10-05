@@ -73,7 +73,7 @@ const Page = async ({ params, searchParams }: URLProps) => {
           </div>
         </div>
         <div className="max:sm:mb-5 max:sm:w-full flex justify-end sm:mt-3">
-            {viewerId === String(userInfo.user._id) && (
+            {!currentUser?.isDemo && viewerId === String(userInfo.user._id) && (
               <Link href="/profile/edit">
                 <Button className="paragraph-medium btn-secondary text-dark300_light900 min-h-[46px] min-w-[175px] px-4 py-3">
                   Edit Profile

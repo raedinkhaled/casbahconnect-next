@@ -7,7 +7,9 @@ import Answer from "@/database/answer.model";
 import Question from "@/database/question.model";
 import Tag from "@/database/tag.model";
 import User, { type IUser } from "@/database/user.model";
-import { requireCurrentUser } from "@/lib/auth-user";
+import { requireCurrentUser, requireWritableUser } from "@/lib/auth-user";
+import { DEMO_USER_ID } from "@/lib/demo";
+import { getDemoUser } from "@/lib/demo-user";
 import { connectToDatabase } from "@/lib/mongoose";
 import { ProfileSchema } from "@/lib/validations";
 import { assignBadges } from "@/lib/utils";
@@ -53,12 +55,13 @@ export async function getAllUsers(params: GetAllUsersParams) {
 }
 
 export async function getUserById({ userId }: GetUserByIdParams) {
+  if (userId === DEMO_USER_ID) return getDemoUser();
   await connectToDatabase();
   return User.findById(userId);
 }
 
 export async function updateUser({ updateData, path }: UpdateUserParams) {
-  const actor = await requireCurrentUser();
+  const actor = await requireWritableUser();
   const safeUpdate = ProfileSchema.parse(updateData);
   await connectToDatabase();
 
@@ -74,7 +77,7 @@ export async function toggleSaveQuestion({
   questionId,
   path,
 }: ToggleSaveQuestionParams) {
-  const actor = await requireCurrentUser();
+  const actor = await requireWritableUser();
   await connectToDatabase();
   const hasSaved = actor.saved.some((id: unknown) => sameId(id, questionId));
 
@@ -86,6 +89,7 @@ export async function toggleSaveQuestion({
 
 export async function getSavedQuestions(params: GetSavedQuestionsParams) {
   const actor = await requireCurrentUser();
+  if (actor.isDemo) return { questions: [], isNext: false };
   await connectToDatabase();
   const { page = 1, pageSize = 20, filter, searchQuery } = params;
   const skipAmount = (page - 1) * pageSize;
@@ -123,6 +127,15 @@ export async function getSavedQuestions(params: GetSavedQuestionsParams) {
 }
 
 export async function getUserInfo({ userId }: GetUserByIdParams) {
+  if (userId === DEMO_USER_ID) {
+    return {
+      user: getDemoUser(),
+      totalQuestion: 0,
+      totalAnswers: 0,
+      badgeCounts: assignBadges({ criteria: [] }),
+      reputation: 0,
+    };
+  }
   await connectToDatabase();
   const user = await User.findById(userId);
   if (!user) throw new Error("User not found");
@@ -174,6 +187,9 @@ export async function getUserInfo({ userId }: GetUserByIdParams) {
 }
 
 export async function getUserQuestions(params: GetUserStatsParams) {
+  if (params.userId === DEMO_USER_ID) {
+    return { totalQuestion: 0, questions: [], isNext: false };
+  }
   await connectToDatabase();
   const { userId, page = 1, pageSize = 10 } = params;
   const skipAmount = (page - 1) * pageSize;
@@ -195,6 +211,9 @@ export async function getUserQuestions(params: GetUserStatsParams) {
 }
 
 export async function getUserAnswers(params: GetUserStatsParams) {
+  if (params.userId === DEMO_USER_ID) {
+    return { totalAnswers: 0, answers: [], isNext: false };
+  }
   await connectToDatabase();
   const { userId, page = 1, pageSize = 10 } = params;
   const skipAmount = (page - 1) * pageSize;

@@ -7,6 +7,7 @@ import {
 } from "@/lib/actions/question.action";
 import { toggleSaveQuestion } from "@/lib/actions/user.action";
 import { formatNumber } from "@/lib/utils";
+import { DEMO_DISABLED_MESSAGE } from "@/lib/demo";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import React, { useEffect } from "react";
@@ -16,6 +17,7 @@ interface Props {
   type: string;
   itemId: string;
   userId?: string;
+  isDemo?: boolean;
   upvotes: number;
   hasUpvoted: boolean;
   downvotes: number;
@@ -27,6 +29,7 @@ const Votes = ({
   type,
   itemId,
   userId,
+  isDemo = false,
   upvotes,
   hasUpvoted,
   downvotes,
@@ -35,7 +38,12 @@ const Votes = ({
 }: Props) => {
   const pathname = usePathname();
   const router = useRouter();
+  const showDemoNotice = () => toast({
+    title: "Demo Mode",
+    description: DEMO_DISABLED_MESSAGE,
+  });
   const handleSave = async () => {
+    if (isDemo) return showDemoNotice();
     if (!userId) {
       return toast({
         title: "Please sign in",
@@ -56,6 +64,7 @@ const Votes = ({
   };
 
   const handleVote = async (action: string) => {
+    if (isDemo) return showDemoNotice();
     if (!userId) {
       return toast({
         title: "Please log in",
@@ -100,10 +109,11 @@ const Votes = ({
   };
 
   useEffect(() => {
+    if (isDemo) return;
     viewQuestion({
       questionId: itemId,
     });
-  }, [itemId, userId, pathname, router]);
+  }, [itemId, userId, pathname, router, isDemo]);
 
   return (
     <div className="flex gap-5">
