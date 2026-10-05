@@ -109,11 +109,11 @@ const Votes = ({
   };
 
   useEffect(() => {
-    if (isDemo) return;
-    viewQuestion({
+    if (isDemo || type !== "Question") return;
+    void viewQuestion({
       questionId: itemId,
-    });
-  }, [itemId, userId, pathname, router, isDemo]);
+    }).catch(console.error);
+  }, [itemId, userId, isDemo, type]);
 
   return (
     <div className="flex gap-5">

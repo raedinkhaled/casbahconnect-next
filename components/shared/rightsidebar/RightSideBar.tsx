@@ -2,14 +2,20 @@ import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 import RenderTag from "../RenderTag";
-import { getHotQuestions } from "@/lib/actions/question.action";
-import { getTopPopularTags } from "@/lib/actions/tag.actions";
+import { getSidebarData } from "@/lib/sidebar";
+import { Skeleton } from "@/components/ui/skeleton";
+
+export function RightSideBarSkeleton() {
+  return (
+    <section aria-label="Loading sidebar" aria-busy="true" className="background-light900_dark200 light-border sticky right-0 top-0 h-screen w-[350px] space-y-8 border-l p-6 pt-36 max-xl:hidden">
+      <Skeleton className="h-7 w-40" />
+      {[1, 2, 3, 4, 5].map((item) => <Skeleton key={item} className="h-10 w-full" />)}
+    </section>
+  );
+}
 
 const RightSideBar = async () => {
-  const [hotQuestions, popularTags] = await Promise.all([
-    getHotQuestions(),
-    getTopPopularTags(),
-  ]);
+  const { hotQuestions, popularTags } = await getSidebarData();
 
   return (
     <section className="background-light900_dark200 light-border custom-scrollbar sticky right-0 top-0 flex h-screen w-[350px] flex-col overflow-y-auto border-l p-6 pt-36 shadow-light-300 dark:shadow-none max-xl:hidden">

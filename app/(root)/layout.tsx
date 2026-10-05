@@ -1,8 +1,8 @@
 import LeftSideBar from "@/components/shared/leftsidebar/LeftSideBar";
 import Navbar from "@/components/shared/navbar/Navbar";
-import RightSideBar from "@/components/shared/rightsidebar/RightSideBar";
+import RightSideBar, { RightSideBarSkeleton } from "@/components/shared/rightsidebar/RightSideBar";
 import { Toaster } from "@/components/ui/toaster";
-import React from "react";
+import React, { Suspense } from "react";
 import { getCurrentUser } from "@/lib/auth-user";
 import DemoNotice from "@/components/auth/DemoNotice";
 
@@ -32,7 +32,9 @@ const Layout = async ({ children }: { children: React.ReactNode }) => {
             {children}
           </div>
         </section>
-        <RightSideBar />
+        <Suspense fallback={<RightSideBarSkeleton />}>
+          <RightSideBar />
+        </Suspense>
       </div>
       <Toaster />
     </main>

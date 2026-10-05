@@ -48,6 +48,8 @@ Route access is enforced in two layers:
 
 Public reads (browsing questions, profiles, tags) stay open to anyone. Demo mode is read-only: creating/editing/deleting questions and answers, voting (which changes reputation), saving questions, and profile changes are disabled. Demo question views also skip view-count and interaction writes. Demo collections and profile activity are empty; recommended questions fall back to the frequent feed. Search, filters, pagination, themes, and sign-out remain available. Demo mode uses the application's existing public content, so MongoDB must still be reachable for browsing. It does not simulate posting or maintain personal/shared demo state.
 
+Navigation uses shared loading skeletons and streams the sidebar separately. Public sidebar rankings are cached for 60 seconds; sessions and account data remain uncached. Sign-in renders its form on the server, and sign-in/sign-out use client navigation with an auth refresh rather than reloading the document. Global search updates only its popover URL parameters, cancels obsolete GET requests, and searches collections concurrently. Community tag lookups are batched, profile statistics are combined, and list queries fetch only the fields their cards need. Syntax highlighting is scoped to the current post and deferred until the browser is idle.
+
 ## Security highlights
 
 - No password ever exists for a user account — nothing to hash, rate-limit, or leak
@@ -109,7 +111,7 @@ constants/              # Static config (nav links, filters, badge thresholds)
 ## Known limitations
 
 - Search is a case-insensitive scan across collections, not a dedicated search index — adequate at this scale, but would move to a proper search index (e.g. Atlas Search) if usage grew.
-- `npm test` covers demo authentication, JWT/session flags, mutation restrictions, and normal-user authorization using isolated database/SMTP substitutes. Live email delivery and browser interaction still need deployment QA.
+- `npm test` covers authentication, demo restrictions, client auth navigation, search concurrency/cancellation, batched reads, and syntax highlighting using isolated external-service substitutes. Live email delivery and browser interaction still need deployment QA.
 - The "Find Jobs" section is a placeholder for a future job board — not yet implemented.
 
 ## Recent upgrade

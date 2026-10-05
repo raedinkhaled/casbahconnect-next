@@ -5,7 +5,6 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import GlobalFilters from "./GlobalFilters";
-import { globalSearch } from "@/lib/actions/general.action";
 
 interface SearchResultItem {
   id: string;
@@ -18,31 +17,40 @@ const GlobalResult = () => {
   const [isLoading, setisLoading] = useState(false);
 
   const [result, setresult] = useState<SearchResultItem[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   const global = searchParams.get("global");
   const type = searchParams.get("type");
 
   useEffect(() => {
+    let active = true;
+    const controller = new AbortController();
     const fetchResult = async () => {
       setresult([]);
       setisLoading(true);
+      setError(null);
 
       try {
-        const res = await globalSearch({ query: global, type });
-
-        const parsed: unknown = JSON.parse(res);
-        setresult(Array.isArray(parsed) ? (parsed as SearchResultItem[]) : []);
-      } catch (error) {
-        console.log(error);
-        throw error;
+        const params = new URLSearchParams({ q: global || "" });
+        if (type) params.set("type", type);
+        const res = await fetch(`/api/search?${params}`, { signal: controller.signal });
+        if (!res.ok) throw new Error("Search request failed");
+        const parsed: unknown = await res.json();
+        if (active) setresult(Array.isArray(parsed) ? (parsed as SearchResultItem[]) : []);
+      } catch {
+        if (active) setError("Could not load search results. Please try again.");
       } finally {
-        setisLoading(false);
+        if (active) setisLoading(false);
       }
     };
 
     if (global) {
-      fetchResult();
+      void fetchResult();
     }
+    return () => {
+      active = false;
+      controller.abort();
+    };
   }, [global, type]);
 
   const renderLink = (type: string, id: string) => {
@@ -73,7 +81,7 @@ const GlobalResult = () => {
           <div className="flex-center flex-col px-5">
             <ReloadIcon className="my-2 h-10 w-10 animate-spin text-primary-500" />
             <p className="text-dark200_light800 body-regular">
-              Browsing the entier Database
+              Searching…
             </p>
           </div>
         ) : (
@@ -105,8 +113,8 @@ const GlobalResult = () => {
               ))
             ) : (
               <div className="flex-center flex-col px-5">
-                <p className="text-dark200_light800 body-regular px-5 py-2.5">
-                  Oops. no results found
+                <p className="text-dark200_light800 body-regular px-5 py-2.5" role={error ? "alert" : undefined}>
+                  {error || "No results found"}
                 </p>
               </div>
             )}

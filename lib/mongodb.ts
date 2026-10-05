@@ -6,21 +6,14 @@ if (!uri) {
   throw new Error("MONGODB_URL is not configured");
 }
 
-const options = {};
-
 declare global {
-  var _mongoClientPromise: Promise<MongoClient> | undefined;
+  var _mongoClient: MongoClient | undefined;
 }
 
-let clientPromise: Promise<MongoClient>;
+// The adapter accepts an unconnected client. The driver opens a connection
+// on the first database operation, so JWT/session and demo requests do not
+// start an unused connection pool. Reuse the pool in warm production workers.
+const client = global._mongoClient ?? new MongoClient(uri);
+global._mongoClient = client;
 
-if (process.env.NODE_ENV === "development") {
-  if (!global._mongoClientPromise) {
-    global._mongoClientPromise = new MongoClient(uri, options).connect();
-  }
-  clientPromise = global._mongoClientPromise;
-} else {
-  clientPromise = new MongoClient(uri, options).connect();
-}
-
-export default clientPromise;
+export default client;

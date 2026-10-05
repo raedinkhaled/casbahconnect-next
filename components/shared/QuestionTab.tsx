@@ -1,4 +1,4 @@
-import { getUserQuestions } from "@/lib/actions/user.action";
+import type { getUserQuestions } from "@/lib/actions/user.action";
 import type { RouteSearchParams } from "@/types";
 import React from "react";
 import QuestionCard from "../cards/QuestionCard";
@@ -6,16 +6,12 @@ import Pagination from "./Pagination";
 
 interface Props {
   searchParams: RouteSearchParams;
-  userId: string;
+  result: Awaited<ReturnType<typeof getUserQuestions>>;
   viewerId?: string | null;
 }
 type UserQuestion = Awaited<ReturnType<typeof getUserQuestions>>["questions"][number];
 
-const QuestionTab = async ({ searchParams, userId, viewerId }: Props) => {
-  const result = await getUserQuestions({
-    userId,
-    page: searchParams.page ? +searchParams.page : 1,
-  });
+const QuestionTab = ({ searchParams, result, viewerId }: Props) => {
   return (
     <>
       {result.questions.map((question: UserQuestion) => (

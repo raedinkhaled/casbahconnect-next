@@ -1,5 +1,6 @@
 "use server";
 
+import { getTopTagsForUsers } from "@/lib/user-tags";
 import User from "@/database/user.model";
 import { connectToDatabase } from "../mongoose";
 import {
@@ -8,33 +9,18 @@ import {
   GetTopInteractedTagsParams,
 } from "./shared.types";
 import Tag, { ITag } from "@/database/tag.model";
-import { QueryFilter } from "mongoose";
+import { QueryFilter, Types } from "mongoose";
 import Question from "@/database/question.model";
 
 export async function getTopInteractedTags(params: GetTopInteractedTagsParams) {
-  try {
-    connectToDatabase();
-
-    const { userId } = params;
-
-    const user = await User.findById(userId);
-
-    if (!user) throw new Error("User not found");
-
-    return [
-      { _id: "1", name: "tag1" },
-      { _id: "2", name: "tag2" },
-      { _id: "3", name: "tag3" },
-    ];
-  } catch (error) {
-    console.log(error);
-    throw error;
-  }
+  const { userId, limit } = params;
+  const tags = await getTopTagsForUsers([new Types.ObjectId(userId)], limit);
+  return tags[userId] || [];
 }
 
 export async function getAllTags(params: GetAllTagsParams) {
   try {
-    connectToDatabase();
+    await connectToDatabase();
     const { searchQuery, page = 1, pageSize = 20, filter } = params;
     const skipAmount = (page - 1) * pageSize;
     const query: QueryFilter<ITag> = {};
@@ -66,12 +52,15 @@ export async function getAllTags(params: GetAllTagsParams) {
         break;
     }
 
-    const tags = await Tag.find(query)
-      .skip(skipAmount)
-      .limit(pageSize)
-      .sort(sortOption);
-
-    const totalTags = await Tag.countDocuments(query);
+    const [tags, totalTags] = await Promise.all([
+      Tag.find(query)
+        .select("_id name questions")
+        .skip(skipAmount)
+        .limit(pageSize)
+        .sort(sortOption)
+        .lean(),
+      Tag.countDocuments(query),
+    ]);
 
     const isNext = totalTags > skipAmount + tags.length;
 
@@ -84,7 +73,7 @@ export async function getAllTags(params: GetAllTagsParams) {
 
 export async function getQuestionsByTagId(params: GetQuestionsByTagIdParams) {
   try {
-    connectToDatabase();
+    await connectToDatabase();
 
     const { tagId, page = 1, pageSize = 10, searchQuery } = params;
     const skipAmount = (page - 1) * pageSize;
@@ -135,15 +124,15 @@ export async function getQuestionsByTagId(params: GetQuestionsByTagIdParams) {
 
 export async function getTopPopularTags() {
   try {
-    connectToDatabase();
+    await connectToDatabase();
 
-    const popularTags = await Tag.aggregate([
+    const popularTags: { _id: Types.ObjectId; name: string; numberofQuestions: number }[] = await Tag.aggregate([
       { $project: { name: 1, numberofQuestions: { $size: "$questions" } } },
       { $sort: { numberofQuestions: -1 } },
       { $limit: 5 },
     ]);
 
-    return popularTags;
+    return popularTags.map((tag) => ({ ...tag, _id: String(tag._id) }));
   } catch (error) {
     console.log(error);
     throw error;

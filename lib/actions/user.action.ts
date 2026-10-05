@@ -11,6 +11,7 @@ import { requireCurrentUser, requireWritableUser } from "@/lib/auth-user";
 import { DEMO_USER_ID } from "@/lib/demo";
 import { getDemoUser } from "@/lib/demo-user";
 import { connectToDatabase } from "@/lib/mongoose";
+import { getTopTagsForUsers } from "@/lib/user-tags";
 import { ProfileSchema } from "@/lib/validations";
 import { assignBadges } from "@/lib/utils";
 import type { BadgeCriteriaType } from "@/types";
@@ -43,15 +44,25 @@ export async function getAllUsers(params: GetAllUsersParams) {
   if (filter === "old_users") sortOptions = { joinedAt: 1 };
   if (filter === "top_contributors") sortOptions = { reputation: -1 };
 
-  const [users, totalUsers] = await Promise.all([
+  const [users, totalUsers]: [Pick<IUser, "_id" | "name" | "username" | "email" | "image" | "picture">[], number] = await Promise.all([
     User.find(query)
+      .select("_id name username email image picture")
       .skip(skipAmount)
       .limit(pageSize)
-      .sort(sortOptions),
+      .sort(sortOptions)
+      .lean(),
     User.countDocuments(query),
   ]);
 
-  return { users, isNext: totalUsers > skipAmount + users.length };
+  const tagsByUser = await getTopTagsForUsers(users.map((user) => user._id));
+  return {
+    users: users.map((user) => ({
+      ...user,
+      _id: String(user._id),
+      topTags: tagsByUser[String(user._id)] || [],
+    })),
+    isNext: totalUsers > skipAmount + users.length,
+  };
 }
 
 export async function getUserById({ userId }: GetUserByIdParams) {
@@ -140,40 +151,45 @@ export async function getUserInfo({ userId }: GetUserByIdParams) {
   const user = await User.findById(userId);
   if (!user) throw new Error("User not found");
 
-  const [questionUpvotes, answerUpvotes, questionViews, totalQuestion, totalAnswers] =
+  const [[questionStats], [answerStats]]:
+    [{ totalUpvotes: number; totalViews: number; count: number }[], { totalUpvotes: number; count: number }[]] =
     await Promise.all([
       Question.aggregate([
         { $match: { author: user._id } },
-        { $project: { upvotes: { $size: "$upvotes" } } },
-        { $group: { _id: null, totalUpvotes: { $sum: "$upvotes" } } },
-      ]).then(([result]) => result),
+        { $group: {
+          _id: null,
+          totalUpvotes: { $sum: { $size: "$upvotes" } },
+          totalViews: { $sum: "$views" },
+          count: { $sum: 1 },
+        } },
+      ]),
       Answer.aggregate([
         { $match: { author: user._id } },
-        { $project: { upvotes: { $size: "$upvotes" } } },
-        { $group: { _id: null, totalUpvotes: { $sum: "$upvotes" } } },
-      ]).then(([result]) => result),
-      Question.aggregate([
-        { $match: { author: user._id } },
-        { $group: { _id: null, totalViews: { $sum: "$views" } } },
-      ]).then(([result]) => result),
-      Question.countDocuments({ author: user._id }),
-      Answer.countDocuments({ author: user._id }),
+        { $group: {
+          _id: null,
+          totalUpvotes: { $sum: { $size: "$upvotes" } },
+          count: { $sum: 1 },
+        } },
+      ]),
     ]);
+
+  const totalQuestion = questionStats?.count || 0;
+  const totalAnswers = answerStats?.count || 0;
 
   const criteria = [
     { type: "QUESTION_COUNT" as BadgeCriteriaType, count: totalQuestion },
     { type: "ANSWER_COUNT" as BadgeCriteriaType, count: totalAnswers },
     {
       type: "QUESTION_UPVOTES" as BadgeCriteriaType,
-      count: questionUpvotes?.totalUpvotes || 0,
+      count: questionStats?.totalUpvotes || 0,
     },
     {
       type: "ANSWER_UPVOTES" as BadgeCriteriaType,
-      count: answerUpvotes?.totalUpvotes || 0,
+      count: answerStats?.totalUpvotes || 0,
     },
     {
       type: "TOTAL_VIEWS" as BadgeCriteriaType,
-      count: questionViews?.totalViews || 0,
+      count: questionStats?.totalViews || 0,
     },
   ];
 
@@ -195,6 +211,7 @@ export async function getUserQuestions(params: GetUserStatsParams) {
   const skipAmount = (page - 1) * pageSize;
   const [questions, totalQuestion] = await Promise.all([
     Question.find({ author: userId })
+      .select("-content -downvotes")
       .skip(skipAmount)
       .limit(pageSize)
       .sort({ createdAt: -1, views: -1, upvotes: -1 })
@@ -219,6 +236,7 @@ export async function getUserAnswers(params: GetUserStatsParams) {
   const skipAmount = (page - 1) * pageSize;
   const [answers, totalAnswers] = await Promise.all([
     Answer.find({ author: userId })
+      .select("-content -downvotes")
       .skip(skipAmount)
       .limit(pageSize)
       .sort({ upvotes: -1 })

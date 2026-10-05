@@ -4,7 +4,7 @@ import QuestionTab from "@/components/shared/QuestionTab";
 import Stats from "@/components/shared/Stats";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getUserInfo } from "@/lib/actions/user.action";
+import { getUserInfo, getUserQuestions, getUserAnswers } from "@/lib/actions/user.action";
 import { getFormattedDate } from "@/lib/utils";
 import { URLProps } from "@/types";
 import { getCurrentUser } from "@/lib/auth-user";
@@ -13,12 +13,18 @@ import Link from "next/link";
 import React from "react";
 
 const Page = async ({ params, searchParams }: URLProps) => {
-  const [{ id }, query, currentUser] = await Promise.all([
+  const currentUserPromise = getCurrentUser();
+  const [{ id }, query] = await Promise.all([
     params,
     searchParams,
-    getCurrentUser(),
   ]);
-  const userInfo = await getUserInfo({ userId: id });
+  const activityParams = { userId: id, page: query.page ? +query.page : 1 };
+  const [currentUser, userInfo, questions, answers] = await Promise.all([
+    currentUserPromise,
+    getUserInfo({ userId: id }),
+    getUserQuestions(activityParams),
+    getUserAnswers(activityParams),
+  ]);
   const viewerId = currentUser ? String(currentUser._id) : undefined;
   const profileImage =
     userInfo.user.picture ||
@@ -104,14 +110,14 @@ const Page = async ({ params, searchParams }: URLProps) => {
           >
             <QuestionTab
               searchParams={query}
-              userId={String(userInfo.user._id)}
+              result={questions}
               viewerId={viewerId}
             />
           </TabsContent>
           <TabsContent value="answers" className="flex w-full flex-col gap-6">
             <AnswersTab
               searchParams={query}
-              userId={String(userInfo.user._id)}
+              result={answers}
               viewerId={viewerId}
             />
           </TabsContent>

@@ -1,4 +1,4 @@
-import { getTopInteractedTags } from "@/lib/actions/tag.actions";
+import type { UserTag } from "@/lib/user-tags";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
@@ -13,11 +13,12 @@ interface Props {
     name?: string | null;
     username?: string;
     email: string;
+    topTags: UserTag[];
   };
 }
 
-const UserCard = async ({ user }: Props) => {
-  const interactedTags = await getTopInteractedTags({ userId: user._id });
+const UserCard = ({ user }: Props) => {
+  const interactedTags = user.topTags;
   return (
     <Link
       href={`/profile/${user._id}`}

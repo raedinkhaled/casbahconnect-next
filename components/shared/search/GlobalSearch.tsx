@@ -2,19 +2,22 @@
 import { Input } from "@/components/ui/input";
 import { formUrlQuery, removeKeysFromQuery } from "@/lib/utils";
 import Image from "next/image";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
 import GlobalResult from "./GlobalResult";
 
-const GlobalSearch = () => {
-  const router = useRouter();
-  const pathname = usePathname();
+const GlobalSearchInput = () => {
   const searchParams = useSearchParams();
   const searchContainerRef = useRef<HTMLDivElement>(null);
 
   const query = searchParams.get("global");
 
   const [search, setSearch] = useState(query || "");
+  const [previousQuery, setPreviousQuery] = useState(query);
+  if (query !== previousQuery) {
+    setPreviousQuery(query);
+    if (search !== (query || "")) setSearch(query || "");
+  }
   const [isOpen, setisOpen] = useState(false);
 
   useEffect(() => {
@@ -45,7 +48,8 @@ const GlobalSearch = () => {
             key: "global",
             value: search,
           });
-          router.push(newUrl, { scroll: false });
+          // Popover parameters do not require a server route refresh.
+          window.history.replaceState(null, "", newUrl);
         }
       } else {
         if (query) {
@@ -53,13 +57,13 @@ const GlobalSearch = () => {
             params: searchParams.toString(),
             keysToRemove: ["global", "type"],
           });
-          router.push(newUrl, { scroll: false });
+          window.history.replaceState(null, "", newUrl);
         }
       }
     }, 350);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [search, pathname, router, searchParams, query]);
+  }, [search, searchParams, query]);
   return (
     <div
       className="relative w-full max-w-[600px] max-lg:hidden"
@@ -91,4 +95,7 @@ const GlobalSearch = () => {
   );
 };
 
-export default GlobalSearch;
+export default function GlobalSearch() {
+  const pathname = usePathname();
+  return <GlobalSearchInput key={pathname} />;
+}

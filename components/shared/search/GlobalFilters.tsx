@@ -1,33 +1,30 @@
 "use client";
 import { GlobalSearchFilters } from "@/constants/filters";
 import { formUrlQuery } from "@/lib/utils";
-import { useRouter, useSearchParams } from "next/navigation";
-import React, { useState } from "react";
+import { useSearchParams } from "next/navigation";
+import React from "react";
 
 const GlobalFilters = () => {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const typeParams = searchParams.get("type");
 
-  const [active, setactive] = useState(typeParams || "");
+  const active = typeParams || "";
 
   const handleTypeClick = (type: string) => {
-    setactive("");
     if (active === type) {
       const newUrl = formUrlQuery({
         params: searchParams.toString(),
         key: "type",
         value: null,
       });
-      router.push(newUrl, { scroll: false });
+      window.history.replaceState(null, "", newUrl);
     } else {
-      setactive(type);
       const newUrl = formUrlQuery({
         params: searchParams.toString(),
         key: "type",
         value: type.toLowerCase(),
       });
-      router.push(newUrl, { scroll: false });
+      window.history.replaceState(null, "", newUrl);
     }
   };
   return (

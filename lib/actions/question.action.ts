@@ -41,8 +41,9 @@ export async function getQuestions(params: GetQuestionsParams) {
 
   const [questions, totalQuestion] = await Promise.all([
     Question.find(query)
-      .populate({ path: "tags", model: Tag })
-      .populate({ path: "author", model: User })
+      .select("-content -downvotes")
+      .populate({ path: "tags", model: Tag, select: "_id name" })
+      .populate({ path: "author", model: User, select: "_id name username email image picture" })
       .skip(skipAmount)
       .limit(pageSize)
       .sort(sortOptions),
@@ -218,7 +219,12 @@ export async function editQuestion(params: EditQuestionParams) {
 
 export async function getHotQuestions() {
   await connectToDatabase();
-  return Question.find({}).sort({ views: -1, upvotes: -1 }).limit(5);
+  const questions: Pick<IQuestion, "_id" | "title">[] = await Question.find({})
+    .select("_id title")
+    .sort({ views: -1, upvotes: -1 })
+    .limit(5)
+    .lean();
+  return questions.map((question) => ({ _id: String(question._id), title: question.title }));
 }
 
 export async function getRecommendedQuestions(params: RecommendedParams) {
@@ -249,8 +255,9 @@ export async function getRecommendedQuestions(params: RecommendedParams) {
 
   const [questions, totalQuestions] = await Promise.all([
     Question.find(query)
-      .populate({ path: "tags", model: Tag })
-      .populate({ path: "author", model: User })
+      .select("-content -downvotes")
+      .populate({ path: "tags", model: Tag, select: "_id name" })
+      .populate({ path: "author", model: User, select: "_id name username email image picture" })
       .skip(skipAmount)
       .limit(pageSize),
     Question.countDocuments(query),

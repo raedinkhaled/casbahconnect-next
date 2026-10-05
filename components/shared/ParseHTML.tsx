@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 
 import Prism from "prismjs";
 import parse from "html-react-parser";
@@ -31,11 +31,22 @@ interface Props {
 }
 
 const ParseHTML = ({ data }: Props) => {
+  const contentRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    Prism.highlightAll();
-  }, []);
+    const content = contentRef.current;
+    if (!content?.querySelector("code")) return;
 
-  return <div className={` markdown w-full min-w-full`}>{parse(data)}</div>;
+    // Highlight only this post, after the navigation has had a chance to paint.
+    const highlight = () => Prism.highlightAllUnder(content);
+    if ("requestIdleCallback" in window) {
+      const handle = window.requestIdleCallback(highlight, { timeout: 500 });
+      return () => window.cancelIdleCallback(handle);
+    }
+    const handle = setTimeout(highlight, 0);
+    return () => clearTimeout(handle);
+  }, [data]);
+
+  return <div ref={contentRef} className={` markdown w-full min-w-full`}>{parse(data)}</div>;
 };
 
 export default ParseHTML;

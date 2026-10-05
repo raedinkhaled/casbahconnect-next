@@ -6,7 +6,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 
 import User from "@/database/user.model";
 import { connectToDatabase } from "@/lib/mongoose";
-import clientPromise from "@/lib/mongodb";
+import client from "@/lib/mongodb";
 import {
   DEMO_USER_EMAIL,
   DEMO_USER_ID,
@@ -19,7 +19,7 @@ const TEN_MINUTES = 10 * 60;
 const emailPort = Number(process.env.EMAIL_SERVER_PORT ?? 465);
 
 export const authOptions: NextAuthOptions = {
-  adapter: MongoDBAdapter(clientPromise, {
+  adapter: MongoDBAdapter(client, {
     databaseName: "devflow",
   }) as Adapter,
   providers: [
